@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英語教學進度與下週備課規劃儀錶板</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS (xlsx) for direct Excel/CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- 頂部導航與標題 -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-emerald-600 text-white rounded-xl shadow-sm">
+          <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold text-slate-900 tracking-tight">英語教學進度與下週備課儀錶板</h1>
+            <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-medium">115學年度 第1學期</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">即時授課成效追蹤 • 課堂常規診斷 • 下週差異化進度規劃</p>
+        </div>
+      </div>
+      
+      <!-- 功能快捷按鈕 -->
+      <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+        <button onclick="openModal('importModal')" class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
+          匯入 Excel / Sheet
+        </button>
+        <button onclick="openModal('addModal')" class="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg shadow-sm transition">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          新增課堂紀錄
+        </button>
+        <button onclick="window.print()" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          列印規劃表
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- 第一區塊：核心指標 KPI 卡片 -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- 總授課班級數 -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">已記錄授課班級</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <h3 id="kpiClassCount" class="text-2xl font-bold text-slate-900">4</h3>
+            <span class="text-xs text-slate-500">個班級</span>
+          </div>
+          <p id="kpiClassList" class="text-xs text-emerald-600 mt-1 font-medium truncate max-w-[180px]">604, 五平, 五辛, 五和</p>
+        </div>
+        <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+          <i data-lucide="users" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- 平均教學目標達成率 -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">平均目標達成率</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <h3 id="kpiAvgScore" class="text-2xl font-bold text-slate-900">3.5</h3>
+            <span class="text-xs text-slate-400">/ 5.0 分</span>
+          </div>
+          <div class="flex items-center gap-1 mt-1 text-xs text-amber-600">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+            <span>導覽與開學常規建立期</span>
+          </div>
+        </div>
+        <div class="p-3 bg-amber-50 rounded-xl text-amber-600">
+          <i data-lucide="target" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- 待跟進常規與進度事項 -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">待跟進常規建立班級</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <h3 id="kpiPendingRoutine" class="text-2xl font-bold text-rose-600">3</h3>
+            <span class="text-xs text-slate-500">班需補足常規</span>
+          </div>
+          <p class="text-xs text-rose-500 mt-1">五平、五辛、五和進度待補</p>
+        </div>
+        <div class="p-3 bg-rose-50 rounded-xl text-rose-600">
+          <i data-lucide="alert-circle" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- 行政備課待辦事項 -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">重要備課與行政待辦</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <h3 id="kpiActionCount" class="text-2xl font-bold text-indigo-600">2</h3>
+            <span class="text-xs text-slate-500">項關鍵行動</span>
+          </div>
+          <p class="text-xs text-indigo-600 mt-1 truncate max-w-[180px]">學習單送印、加章卡準備</p>
+        </div>
+        <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600">
+          <i data-lucide="check-square" class="w-6 h-6"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第二區塊：🎯 下週教學進度規劃與行動策略專區 (核心功能) -->
+    <section class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-md border border-slate-700">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 pb-4 border-b border-slate-700">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">前瞻備課工作台</span>
+            <h2 class="text-lg font-bold text-white">下週（第 2 週）教學排程與差異化因應策略</h2>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">系統依據本週實際授課進度缺漏與評估數據，自動診斷各班落差並生成具體行動策略。</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportWeeklyPlan()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium rounded-lg transition flex items-center gap-1">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i> 複製規劃純文字
+          </button>
+        </div>
+      </div>
+
+      <!-- 下週規劃的三大模組：各班差異化進度策略、行動清單、備課提醒 -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- 模組 1: 各班下週進度與常規補強指引 -->
+        <div class="lg:col-span-2 space-y-4">
+          <h3 class="text-sm font-semibold text-emerald-400 flex items-center gap-2">
+            <i data-lucide="compass" class="w-4 h-4"></i> 各班差異化排程指引 (由本週進度智能推算)
+          </h3>
+          <div id="weeklyClassCards" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- 動態生成班級卡片 -->
+          </div>
+        </div>
+
+        <!-- 模組 2: 下週備課與行政執行待辦檢核清單 -->
+        <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold text-indigo-400 flex items-center gap-2">
+                <i data-lucide="list-todo" class="w-4 h-4"></i> 備課執行清單 (Checklist)
+              </h3>
+              <span id="todoProgress" class="text-xs bg-indigo-900/50 text-indigo-300 px-2 py-0.5 rounded font-mono">1/3 已完成</span>
+            </div>
+            <p class="text-xs text-slate-400 mb-3">包含本週備註事項與開學常規道具整備：</p>
+            
+            <div id="todoList" class="space-y-2.5 text-xs text-slate-300">
+              <!-- 動態生成或預設之 TODO -->
+            </div>
+          </div>
+
+          <!-- 新增待辦輸入框 -->
+          <div class="mt-4 pt-3 border-t border-slate-700 flex gap-2">
+            <input type="text" id="newTodoInput" placeholder="新增下週備課待辦..." class="bg-slate-900/80 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 flex-1">
+            <button onclick="addCustomTodo()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg font-medium transition">
+              新增
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第三區塊：互動圖表視覺化分析 -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- 圖表 1: 各班教學目標達成率評分 -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">課堂重點教學目標達成率</h3>
+            <p class="text-xs text-slate-500">1~5 分量表評估（各班目前表現）</p>
+          </div>
+          <span class="p-1.5 bg-slate-100 rounded text-slate-600"><i data-lucide="bar-chart-2" class="w-4 h-4"></i></span>
+        </div>
+        <div class="relative flex-1 min-h-[220px]">
+          <canvas id="scoreChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 圖表 2: 學生課堂參與度分佈（互動、專注力、學習動機） -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">學生課堂參與度綜合分析</h3>
+            <p class="text-xs text-slate-500">課堂互動、專注力與學習動機統計</p>
+          </div>
+          <span class="p-1.5 bg-slate-100 rounded text-slate-600"><i data-lucide="activity" class="w-4 h-4"></i></span>
+        </div>
+        <div class="relative flex-1 min-h-[220px]">
+          <canvas id="engagementChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 圖表 3: 各班開學常規與進度完成狀態 -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">班級進度狀態結構</h3>
+            <p class="text-xs text-slate-500">教學說明貼妥 / 印章單 / 待補規則</p>
+          </div>
+          <span class="p-1.5 bg-slate-100 rounded text-slate-600"><i data-lucide="pie-chart" class="w-4 h-4"></i></span>
+        </div>
+        <div class="relative flex-1 min-h-[220px]">
+          <canvas id="statusPieChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第四區塊：授課紀錄總覽表格（支援篩選、搜尋與編輯） -->
+    <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">授課歷程詳細紀錄總覽</h3>
+          <p class="text-xs text-slate-500 mt-0.5">點擊各欄位可快速檢視詳細備註或進行修改</p>
+        </div>
+
+        <!-- 篩選與搜尋工具列 -->
+        <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+          <!-- 班級篩選 -->
+          <select id="filterClass" onchange="renderTable()" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-emerald-500">
+            <option value="ALL">全部班級</option>
+          </select>
+
+          <!-- 達成率篩選 -->
+          <select id="filterScore" onchange="renderTable()" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-emerald-500">
+            <option value="ALL">全部達成率</option>
+            <option value="4">4 分以上</option>
+            <option value="3">3 分</option>
+            <option value="UNRATED">尚未評分</option>
+          </select>
+
+          <!-- 搜尋框 -->
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400"></i>
+            <input type="text" id="searchKeyword" oninput="renderTable()" placeholder="搜尋實際進度、備註..." class="pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-emerald-500 w-44">
+          </div>
+        </div>
+      </div>
+
+      <!-- 表格內容 -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100/70 text-slate-700 font-semibold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-4">授課日期</th>
+              <th class="py-3 px-3">班級</th>
+              <th class="py-3 px-3">預計進度</th>
+              <th class="py-3 px-4">實際進度與常規建立</th>
+              <th class="py-3 px-3">目標達成率</th>
+              <th class="py-3 px-3">課堂參與度 (互動/專注/動機)</th>
+              <th class="py-3 px-3">作業/缺席</th>
+              <th class="py-3 px-4">備註事項</th>
+              <th class="py-3 px-3 text-right">操作</th>
+            </tr>
+          </thead>
+          <tbody id="recordTableBody" class="divide-y divide-slate-200">
+            <!-- 動態生成資料列 -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 表尾摘要資訊 -->
+      <div class="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
+        <span id="tableCountInfo">顯示 4 筆授課紀錄</span>
+        <span class="text-slate-400 text-[11px]">資料來源：英語教學進度紀錄表 (回覆)</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal 1: 匯入資料 (Excel / CSV / Google Sheet) -->
+  <div id="importModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="upload" class="w-5 h-5 text-emerald-600"></i>
+          匯入教學紀錄資料
+        </h3>
+        <button onclick="closeModal('importModal')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- 檔案上傳區 -->
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">上傳 Excel 或 CSV 檔案 (.xlsx, .xls, .csv)</label>
+          <div class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl p-5 text-center cursor-pointer transition bg-slate-50" onclick="document.getElementById('fileUploadInput').click()">
+            <i data-lucide="file-up" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+            <p class="text-slate-600 font-medium">點擊選擇檔案，或將 Excel 檔案拖曳至此</p>
+            <p class="text-slate-400 text-[11px] mt-1">支援 Google 表單直接匯出之試算表格式</p>
+            <input type="file" id="fileUploadInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
+          </div>
+        </div>
+
+        <div class="relative flex py-1 items-center">
+          <div class="flex-grow border-t border-slate-200"></div>
+          <span class="flex-shrink mx-3 text-slate-400 text-[11px]">或直接貼上 CSV 文本</span>
+          <div class="flex-grow border-t border-slate-200"></div>
+        </div>
+
+        <div>
+          <textarea id="csvPasteArea" rows="4" placeholder="可直接將 Excel 內容複製後貼上在此處 (含標題列)..." class="w-full p-2.5 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button onclick="resetToInitialData()" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition">重設為初始表單資料</button>
+          <button onclick="handleCsvPaste()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition">解析並匯入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: 新增/編輯課堂紀錄 -->
+  <div id="addModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+        <h3 id="formModalTitle" class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i>
+          新增授課紀錄
+        </h3>
+        <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="recordForm" onsubmit="saveRecord(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="recordId">
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">授課日期</label>
+            <input type="date" id="inputDate" required class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">授課班級</label>
+            <input type="text" id="inputClass" required placeholder="例如：604, 五平, 五辛" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">預計進度</label>
+            <input type="text" id="inputPlanned" placeholder="例如：導覽、Unit 1" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">目標達成率 (1~5 分)</label>
+            <select id="inputScore" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500">
+              <option value="">尚未評估</option>
+              <option value="5">5 分 (完全達成)</option>
+              <option value="4">4 分 (良好達成)</option>
+              <option value="3">3 分 (尚可/部分達成)</option>
+              <option value="2">2 分 (待加強)</option>
+              <option value="1">1 分 (未達成)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">實際進度與常規建立狀況</label>
+          <input type="text" id="inputActual" required placeholder="例如：貼完教學說明、還有印章單未貼、未說明加章規則" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <!-- 學生課堂參與度評估 -->
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+          <p class="font-medium text-slate-800">學生課堂參與度評估</p>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-[11px] text-slate-500 block">課堂互動</label>
+              <select id="inputInteraction" class="w-full p-1.5 border border-slate-300 rounded bg-white">
+                <option value="">未記錄</option>
+                <option value="良好">良好</option>
+                <option value="普通">普通</option>
+                <option value="待加強">待加強</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] text-slate-500 block">專注力</label>
+              <select id="inputFocus" class="w-full p-1.5 border border-slate-300 rounded bg-white">
+                <option value="">未記錄</option>
+                <option value="良好">良好</option>
+                <option value="普通">普通</option>
+                <option value="待加強">待加強</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] text-slate-500 block">學習動機</label>
+              <select id="inputMotivation" class="w-full p-1.5 border border-slate-300 rounded bg-white">
+                <option value="">未記錄</option>
+                <option value="良好">良好</option>
+                <option value="普通">普通</option>
+                <option value="待加強">待加強</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 名單追蹤 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div>
+            <label class="text-[11px] text-slate-600 block">作業訂正</label>
+            <input type="text" id="inputHwCorrection" placeholder="無 / 姓名座號" class="w-full p-1.5 border border-slate-300 rounded">
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-600 block">作業補交</label>
+            <input type="text" id="inputHwMakeup" placeholder="無 / 姓名座號" class="w-full p-1.5 border border-slate-300 rounded">
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-600 block">補考名單</label>
+            <input type="text" id="inputExamMakeup" placeholder="無 / 姓名座號" class="w-full p-1.5 border border-slate-300 rounded">
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-600 block">缺席名單</label>
+            <input type="text" id="inputAbsent" placeholder="無 / 姓名座號" class="w-full p-1.5 border border-slate-300 rounded">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">備註欄 / 備課提醒</label>
+          <textarea id="inputNotes" rows="2" placeholder="例如：先製作第一單元學習單送印..." class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="closeModal('addModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">取消</button>
+          <button type="submit" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg">儲存紀錄</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // 預載資料（直接對應使用者 Google Sheet 之實際資料內容）
+    const initialDataset = [
+      {
+        id: 1,
+        timestamp: "2026/9/1 下午 3:28:27",
+        date: "2026-08-31",
+        class: "604",
+        planned: "導覽",
+        actual: "貼完教學說明",
+        hwCorrection: "無",
+        hwMakeup: "無",
+        examMakeup: "無",
+        absent: "無",
+        interaction: "良好",
+        focus: "良好",
+        motivation: "良好",
+        score: 4,
+        suggestion: "",
+        notes: "先製作第一單元學習單送印"
+      },
+      {
+        id: 2,
+        timestamp: "2026/9/2 下午 1:19:33",
+        date: "2026-09-02",
+        class: "五平",
+        planned: "開學導覽",
+        actual: "還有印章單未貼",
+        hwCorrection: "",
+        hwMakeup: "",
+        examMakeup: "",
+        absent: "",
+        interaction: "良好",
+        focus: "良好",
+        motivation: "普通",
+        score: 3,
+        suggestion: "",
+        notes: ""
+      },
+      {
+        id: 3,
+        timestamp: "2026/9/2 下午 1:20:32",
+        date: "2026-09-02",
+        class: "五辛",
+        planned: "開學導覽",
+        actual: "未貼教學說明",
+        hwCorrection: "",
+        hwMakeup: "",
+        examMakeup: "",
+        absent: "",
+        interaction: "普通",
+        focus: "普通",
+        motivation: "普通",
+        score: null,
+        suggestion: "",
+        notes: ""
+      },
+      {
+        id: 4,
+        timestamp: "2026/9/2 下午 1:21:47",
+        date: "2026-09-02",
+        class: "五和",
+        planned: "開學導覽",
+        actual: "未貼教學說明、未說明加章規則",
+        hwCorrection: "",
+        hwMakeup: "",
+        examMakeup: "",
+        absent: "",
+        interaction: "普通",
+        focus: "普通",
+        motivation: "待加強",
+        score: null,
+        suggestion: "",
+        notes: ""
+      }
+    ];
+
+    // 全域變數
+    let records = JSON.parse(JSON.stringify(initialDataset));
+    let customTodos = [
+      { id: 't1', text: '【行政備課】製作第一單元英語學習單並送印 (604備註)', done: true },
+      { id: 't2', text: '【課堂常規】準備「加章規則說明簡報」與獎勵印章卡 (五和、五平)', done: false },
+      { id: 't3', text: '【教學說明】印製/補發教學說明單張予五辛、五和導師或課堂補貼', done: false }
+    ];
+
+    // Chart.js 實例持有器
+    let scoreChartInstance = null;
+    let engagementChartInstance = null;
+    let statusPieChartInstance = null;
+
+    // 頁面初始化
+    window.onload = function() {
+      lucide.createIcons();
+      updateAll();
+    };
+
+    function updateAll() {
+      renderKPIs();
+      renderWeeklyPlan();
+      renderCharts();
+      renderClassFilter();
+      renderTable();
+      renderTodoList();
+      lucide.createIcons();
+    }
+
+    // 1. 計算並呈現 KPI
+    function renderKPIs() {
+      const classes = [...new Set(records.map(r => r.class))];
+      document.getElementById('kpiClassCount').innerText = classes.length;
+      document.getElementById('kpiClassList').innerText = classes.join(', ');
+
+      const scores = records.filter(r => r.score !== null && r.score !== undefined && !isNaN(r.score)).map(r => Number(r.score));
+      const avgScore = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '-';
+      document.getElementById('kpiAvgScore').innerText = avgScore;
+
+      // 檢查進度中帶有 "未" 或 "還有" 的班級
+      const pendingRoutines = records.filter(r => r.actual && (r.actual.includes('未') || r.actual.includes('還有')));
+      document.getElementById('kpiPendingRoutine').innerText = pendingRoutines.length;
+
+      // 備註非空的待辦數
+      const notesWithAction = records.filter(r => r.notes && r.notes.trim() !== '');
+      document.getElementById('kpiActionCount').innerText = notesWithAction.length + customTodos.filter(t => !t.done).length;
+    }
+
+    // 2. 🎯 下週教學進度規劃與行動策略生成
+    function renderWeeklyPlan() {
+      const container = document.getElementById('weeklyClassCards');
+      container.innerHTML = '';
+
+      records.forEach(r => {
+        let statusBadge = '';
+        let nextWeekPlan = '';
+        let warningClass = '';
+
+        if (r.class === '604') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">進度超前/正常</span>';
+          nextWeekPlan = '已貼完教學說明。下週可直接切入 <strong>Unit 1 課程導讀與發放第1單元學習單</strong>，進行破冰口語問答。';
+          warningClass = 'border-slate-700 bg-slate-800/60';
+        } else if (r.class === '五平') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">印章單待補</span>';
+          nextWeekPlan = '課堂前 5 分鐘<strong>補貼印章單</strong>並簡要複習課堂加分機制；隨後進入 Unit 1 暖身活動。';
+          warningClass = 'border-amber-900/50 bg-slate-800/80';
+        } else if (r.class === '五辛') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30">教學說明待補</span>';
+          nextWeekPlan = '第一節課前 10 分鐘務必<strong>補貼教學說明並提醒英語課堂規矩</strong>，再接續基礎字母或發音複習。';
+          warningClass = 'border-rose-900/50 bg-slate-800/80';
+        } else if (r.class === '五和') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30">常規與加章雙待補</span>';
+          nextWeekPlan = '重點建立班級默契！<strong>補貼教學說明並正式宣告加章獎勵規則</strong>以提升低迷學習動機，再進行教學導讀。';
+          warningClass = 'border-rose-900/50 bg-slate-800/80';
+        } else {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-500/20 text-slate-300">常規排程中</span>';
+          nextWeekPlan = `本週實際進度：${r.actual || '尚未填寫'}。建議下週核對進度並依單元目標推進。`;
+          warningClass = 'border-slate-700 bg-slate-800/60';
+        }
+
+        const card = document.createElement('div');
+        card.className = `p-3.5 rounded-xl border ${warningClass} transition hover:border-slate-500`;
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-base text-white tracking-wide">${r.class} 班</span>
+              <span class="text-xs text-slate-400">上次達成度：${r.score ? r.score + '★' : '未評'}</span>
+            </div>
+            ${statusBadge}
+          </div>
+          <div class="text-xs text-slate-300 leading-relaxed bg-slate-900/50 p-2.5 rounded-lg">
+            ${nextWeekPlan}
+          </div>
+          <div class="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+            <span>本週紀錄：${r.actual || '無'}</span>
+            ${r.notes ? `<span class="text-indigo-300 flex items-center gap-1"><i data-lucide="bookmark" class="w-3 h-3"></i> ${r.notes}</span>` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 3. 待辦清單 (TodoList)
+    function renderTodoList() {
+      const listEl = document.getElementById('todoList');
+      listEl.innerHTML = '';
+      let doneCount = 0;
+
+      customTodos.forEach((item, index) => {
+        if (item.done) doneCount++;
+        const div = document.createElement('div');
+        div.className = `flex items-start gap-2.5 p-2 rounded-lg transition ${item.done ? 'bg-slate-900/30 opacity-60' : 'bg-slate-900/70 border border-slate-700/60'}`;
+        div.innerHTML = `
+          <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleTodo('${item.id}')" class="mt-0.5 accent-emerald-500 rounded cursor-pointer">
+          <span class="flex-1 ${item.done ? 'line-through text-slate-500' : 'text-slate-200'}">${item.text}</span>
+          <button onclick="removeTodo('${item.id}')" class="text-slate-500 hover:text-rose-400 text-xs px-1">✕</button>
+        `;
+        listEl.appendChild(div);
+      });
+
+      document.getElementById('todoProgress').innerText = `${doneCount}/${customTodos.length} 已完成`;
+    }
+
+    function toggleTodo(id) {
+      const item = customTodos.find(t => t.id === id);
+      if (item) item.done = !item.done;
+      renderTodoList();
+      renderKPIs();
+    }
+
+    function removeTodo(id) {
+      customTodos = customTodos.filter(t => t.id !== id);
+      renderTodoList();
+      renderKPIs();
+    }
+
+    function addCustomTodo() {
+      const input = document.getElementById('newTodoInput');
+      const val = input.value.trim();
+      if (!val) return;
+      customTodos.push({
+        id: 't_' + Date.now(),
+        text: val,
+        done: false
+      });
+      input.value = '';
+      renderTodoList();
+      renderKPIs();
+    }
+
+    // 4. 圖表渲染 (Chart.js)
+    function renderCharts() {
+      // 圖表 1: 目標達成率長條圖
+      const ctx1 = document.getElementById('scoreChart').getContext('2d');
+      if (scoreChartInstance) scoreChartInstance.destroy();
+
+      const labels = records.map(r => r.class);
+      const scores = records.map(r => r.score || 0);
+
+      scoreChartInstance = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '教學目標達成率 (1~5分)',
+            data: scores,
+            backgroundColor: scores.map(s => s >= 4 ? '#10b981' : (s >= 3 ? '#f59e0b' : (s > 0 ? '#ef4444' : '#cbd5e1'))),
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 5,
+              ticks: { stepSize: 1 }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      // 圖表 2: 課堂參與度 (互動/專注/動機) 堆疊分析
+      const ctx2 = document.getElementById('engagementChart').getContext('2d');
+      if (engagementChartInstance) engagementChartInstance.destroy();
+
+      let goodCount = 0, normalCount = 0, poorCount = 0;
+      records.forEach(r => {
+        [r.interaction, r.focus, r.motivation].forEach(val => {
+          if (val === '良好') goodCount++;
+          else if (val === '普通') normalCount++;
+          else if (val === '待加強') poorCount++;
+        });
+      });
+
+      engagementChartInstance = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['良好表現', '普通表現', '待加強/需激勵'],
+          datasets: [{
+            data: [goodCount, normalCount, poorCount],
+            backgroundColor: ['#10b981', '#3b82f6', '#f43f5e'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+          },
+          cutout: '65%'
+        }
+      });
+
+      // 圖表 3: 各班開學常規與進度完成狀態
+      const ctx3 = document.getElementById('statusPieChart').getContext('2d');
+      if (statusPieChartInstance) statusPieChartInstance.destroy();
+
+      let finished = 0, stampPending = 0, notePending = 0, allPending = 0;
+      records.forEach(r => {
+        const text = r.actual || '';
+        if (text.includes('貼完') && !text.includes('未')) finished++;
+        else if (text.includes('印章單未貼') || text.includes('還有印章單')) stampPending++;
+        else if (text.includes('未說明加章規則')) allPending++;
+        else if (text.includes('未貼教學說明')) notePending++;
+        else finished++;
+      });
+
+      statusPieChartInstance = new Chart(ctx3, {
+        type: 'pie',
+        data: {
+          labels: ['常規皆完備', '印章單待補', '教學說明待補', '加章規則待說明'],
+          datasets: [{
+            data: [finished, stampPending, notePending, allPending],
+            backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // 5. 班級篩選下拉選單
+    function renderClassFilter() {
+      const select = document.getElementById('filterClass');
+      const currentVal = select.value;
+      select.innerHTML = '<option value="ALL">全部班級</option>';
+      const classes = [...new Set(records.map(r => r.class))];
+      classes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.innerText = c + ' 班';
+        select.appendChild(opt);
+      });
+      select.value = currentVal || 'ALL';
+    }
+
+    // 6. 呈現詳細授課資料表
+    function renderTable() {
+      const tbody = document.getElementById('recordTableBody');
+      tbody.innerHTML = '';
+
+      const filterClass = document.getElementById('filterClass').value;
+      const filterScore = document.getElementById('filterScore').value;
+      const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
+
+      const filtered = records.filter(r => {
+        if (filterClass !== 'ALL' && r.class !== filterClass) return false;
+        if (filterScore === '4' && (!r.score || r.score < 4)) return false;
+        if (filterScore === '3' && (r.score !== 3)) return false;
+        if (filterScore === 'UNRATED' && (r.score !== null && r.score !== undefined && r.score !== '')) return false;
+
+        if (keyword) {
+          const combined = `${r.class} ${r.actual} ${r.planned} ${r.notes} ${r.interaction} ${r.focus} ${r.motivation}`.toLowerCase();
+          if (!combined.includes(keyword)) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="text-center py-8 text-slate-400">
+              <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+              無符合篩選條件之授課紀錄
+            </td>
+          </tr>
+        `;
+        document.getElementById('tableCountInfo').innerText = `顯示 0 筆授課紀錄`;
+        lucide.createIcons();
+        return;
+      }
+
+      filtered.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+
+        // 實際進度標籤風格
+        let actualBadge = '';
+        if (r.actual && (r.actual.includes('未') || r.actual.includes('還有'))) {
+          actualBadge = `<span class="inline-flex items-center gap-1 text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 font-medium"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-500"></i> ${r.actual}</span>`;
+        } else {
+          actualBadge = `<span class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-medium"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> ${r.actual || '依預計進行'}</span>`;
+        }
+
+        // 評分星星/分數
+        let scoreHtml = '';
+        if (r.score) {
+          scoreHtml = `<div class="flex items-center gap-1"><span class="font-bold text-slate-800">${r.score}</span><span class="text-amber-500 font-semibold">★</span></div>`;
+        } else {
+          scoreHtml = `<span class="text-slate-400 italic">未評分</span>`;
+        }
+
+        // 參與度三個維度
+        const engagementBadges = `
+          <div class="flex flex-col gap-0.5 text-[11px]">
+            <span>互動: <strong class="${r.interaction === '良好' ? 'text-emerald-600' : 'text-slate-600'}">${r.interaction || '-'}</strong></span>
+            <span>專注: <strong class="${r.focus === '良好' ? 'text-emerald-600' : 'text-slate-600'}">${r.focus || '-'}</strong></span>
+            <span>動機: <strong class="${r.motivation === '待加強' ? 'text-rose-600' : 'text-slate-600'}">${r.motivation || '-'}</strong></span>
+          </div>
+        `;
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono text-slate-500">${r.date || '-'}</td>
+          <td class="py-3 px-3 font-bold text-slate-900">${r.class}</td>
+          <td class="py-3 px-3 text-slate-600">${r.planned || '-'}</td>
+          <td class="py-3 px-4">${actualBadge}</td>
+          <td class="py-3 px-3">${scoreHtml}</td>
+          <td class="py-3 px-3">${engagementBadges}</td>
+          <td class="py-3 px-3 text-slate-500">
+            ${r.absent && r.absent !== '無' ? `<div class="text-rose-600">缺: ${r.absent}</div>` : ''}
+            ${r.hwMakeup && r.hwMakeup !== '無' ? `<div class="text-amber-600">補: ${r.hwMakeup}</div>` : ''}
+            ${(!r.absent || r.absent === '無') && (!r.hwMakeup || r.hwMakeup === '無') ? '<span class="text-slate-400">全員到齊/繳交</span>' : ''}
+          </td>
+          <td class="py-3 px-4">
+            ${r.notes ? `<div class="p-1.5 bg-amber-50 text-amber-900 rounded border border-amber-200 text-[11px] font-medium max-w-xs">${r.notes}</div>` : '<span class="text-slate-400">-</span>'}
+          </td>
+          <td class="py-3 px-3 text-right">
+            <div class="flex items-center justify-end gap-1">
+              <button onclick="editRecord(${r.id})" class="p-1 text-slate-500 hover:text-emerald-600 rounded hover:bg-slate-100" title="編輯">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteRecord(${r.id})" class="p-1 text-slate-500 hover:text-rose-600 rounded hover:bg-slate-100" title="刪除">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('tableCountInfo').innerText = `顯示 ${filtered.length} 筆授課紀錄`;
+      lucide.createIcons();
+    }
+
+    // 7. 新增與編輯紀錄
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function saveRecord(e) {
+      e.preventDefault();
+      const id = document.getElementById('recordId').value;
+      const recordData = {
+        date: document.getElementById('inputDate').value,
+        class: document.getElementById('inputClass').value.trim(),
+        planned: document.getElementById('inputPlanned').value.trim(),
+        actual: document.getElementById('inputActual').value.trim(),
+        score: document.getElementById('inputScore').value ? Number(document.getElementById('inputScore').value) : null,
+        interaction: document.getElementById('inputInteraction').value,
+        focus: document.getElementById('inputFocus').value,
+        motivation: document.getElementById('inputMotivation').value,
+        hwCorrection: document.getElementById('inputHwCorrection').value.trim(),
+        hwMakeup: document.getElementById('inputHwMakeup').value.trim(),
+        examMakeup: document.getElementById('inputExamMakeup').value.trim(),
+        absent: document.getElementById('inputAbsent').value.trim(),
+        notes: document.getElementById('inputNotes').value.trim()
+      };
+
+      if (id) {
+        // 更新既有
+        const index = records.findIndex(r => r.id == id);
+        if (index !== -1) {
+          records[index] = { ...records[index], ...recordData };
+        }
+      } else {
+        // 新增
+        const newId = Date.now();
+        records.push({
+          id: newId,
+          timestamp: new Date().toLocaleString(),
+          ...recordData
+        });
+      }
+
+      closeModal('addModal');
+      document.getElementById('recordForm').reset();
+      document.getElementById('recordId').value = '';
+      updateAll();
+    }
+
+    function editRecord(id) {
+      const r = records.find(item => item.id == id);
+      if (!r) return;
+
+      document.getElementById('recordId').value = r.id;
+      document.getElementById('formModalTitle').innerText = '編輯授課紀錄 - ' + r.class;
+      document.getElementById('inputDate').value = r.date || '';
+      document.getElementById('inputClass').value = r.class || '';
+      document.getElementById('inputPlanned').value = r.planned || '';
+      document.getElementById('inputActual').value = r.actual || '';
+      document.getElementById('inputScore').value = r.score || '';
+      document.getElementById('inputInteraction').value = r.interaction || '';
+      document.getElementById('inputFocus').value = r.focus || '';
+      document.getElementById('inputMotivation').value = r.motivation || '';
+      document.getElementById('inputHwCorrection').value = r.hwCorrection || '';
+      document.getElementById('inputHwMakeup').value = r.hwMakeup || '';
+      document.getElementById('inputExamMakeup').value = r.examMakeup || '';
+      document.getElementById('inputAbsent').value = r.absent || '';
+      document.getElementById('inputNotes').value = r.notes || '';
+
+      openModal('addModal');
+    }
+
+    function deleteRecord(id) {
+      if (!confirm('確定要刪除此筆授課紀錄嗎？')) return;
+      records = records.filter(r => r.id != id);
+      updateAll();
+    }
+
+    // 8. 檔案解析與匯入 (Excel / CSV)
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        parseSheetArray(json);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function handleCsvPaste() {
+      const text = document.getElementById('csvPasteArea').value.trim();
+      if (!text) {
+        alert('請先貼上 CSV 或表格內容！');
+        return;
+      }
+      const workbook = XLSX.read(text, { type: 'string' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+      parseSheetArray(json);
+    }
+
+    function parseSheetArray(rows) {
+      if (!rows || rows.length < 2) {
+        alert('解析失敗：表格內容過少或無資料行。');
+        return;
+      }
+
+      const header = rows[0];
+      // 尋找各欄位對應 index
+      const colIndex = {
+        timestamp: header.findIndex(h => h && h.includes('時間戳記')),
+        date: header.findIndex(h => h && h.includes('日期')),
+        class: header.findIndex(h => h && h.includes('班級')),
+        planned: header.findIndex(h => h && h.includes('預計進度')),
+        actual: header.findIndex(h => h && h.includes('實際進度')),
+        hwCorrection: header.findIndex(h => h && h.includes('訂正')),
+        hwMakeup: header.findIndex(h => h && h.includes('補交')),
+        examMakeup: header.findIndex(h => h && h.includes('補考')),
+        absent: header.findIndex(h => h && h.includes('缺席')),
+        interaction: header.findIndex(h => h && h.includes('課堂互動')),
+        focus: header.findIndex(h => h && h.includes('專注力')),
+        motivation: header.findIndex(h => h && h.includes('學習動機')),
+        score: header.findIndex(h => h && h.includes('達成率')),
+        suggestion: header.findIndex(h => h && h.includes('建議')),
+        notes: header.findIndex(h => h && h.includes('備註'))
+      };
+
+      const newRecords = [];
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0 || !row[colIndex.class >= 0 ? colIndex.class : 2]) continue;
+
+        newRecords.push({
+          id: Date.now() + i,
+          timestamp: colIndex.timestamp >= 0 ? row[colIndex.timestamp] : '',
+          date: colIndex.date >= 0 ? formatExcelDate(row[colIndex.date]) : '',
+          class: String(row[colIndex.class >= 0 ? colIndex.class : 2] || '').trim(),
+          planned: colIndex.planned >= 0 ? String(row[colIndex.planned] || '').trim() : '',
+          actual: colIndex.actual >= 0 ? String(row[colIndex.actual] || '').trim() : '',
+          hwCorrection: colIndex.hwCorrection >= 0 ? String(row[colIndex.hwCorrection] || '') : '',
+          hwMakeup: colIndex.hwMakeup >= 0 ? String(row[colIndex.hwMakeup] || '') : '',
+          examMakeup: colIndex.examMakeup >= 0 ? String(row[colIndex.examMakeup] || '') : '',
+          absent: colIndex.absent >= 0 ? String(row[colIndex.absent] || '') : '',
+          interaction: colIndex.interaction >= 0 ? String(row[colIndex.interaction] || '') : '',
+          focus: colIndex.focus >= 0 ? String(row[colIndex.focus] || '') : '',
+          motivation: colIndex.motivation >= 0 ? String(row[colIndex.motivation] || '') : '',
+          score: colIndex.score >= 0 && !isNaN(row[colIndex.score]) ? Number(row[colIndex.score]) : null,
+          suggestion: colIndex.suggestion >= 0 ? String(row[colIndex.suggestion] || '') : '',
+          notes: colIndex.notes >= 0 ? String(row[colIndex.notes] || '') : ''
+        });
+      }
+
+      if (newRecords.length > 0) {
+        records = newRecords;
+        closeModal('importModal');
+        updateAll();
+        alert(`成功匯入 ${newRecords.length} 筆教學進度資料！`);
+      } else {
+        alert('未能識別有效資料行，請確認欄位標題是否相符。');
+      }
+    }
+
+    function formatExcelDate(raw) {
+      if (!raw) return '';
+      if (typeof raw === 'number') {
+        const d = new Date(Math.round((raw - 25569) * 86400 * 1000));
+        return d.toISOString().split('T')[0];
+      }
+      return String(raw).replace(/\//g, '-');
+    }
+
+    function resetToInitialData() {
+      records = JSON.parse(JSON.stringify(initialDataset));
+      closeModal('importModal');
+      updateAll();
+    }
+
+    // 9. 複製下週規劃純文字至剪貼簿
+    function exportWeeklyPlan() {
+      let text = "【英語教學下週備課與進度排程規劃】\n\n";
+      records.forEach(r => {
+        text += `■ ${r.class} 班：\n`;
+        text += `  - 本週現況：${r.actual || '完成基本導覽'}\n`;
+        if (r.class === '604') {
+          text += `  - 下週重點：已貼完說明。直接進入 Unit 1 導讀並發放第1單元學習單。\n`;
+        } else if (r.class === '五平') {
+          text += `  - 下週重點：課前5分鐘補貼印章單，進入 Unit 1 暖身。\n`;
+        } else if (r.class === '五辛') {
+          text += `  - 下週重點：課堂前10分鐘補貼教學說明，說明基本課堂默契。\n`;
+        } else if (r.class === '五和') {
+          text += `  - 下週重點：補貼教學說明並說明加章規則，加強學習動機激勵。\n`;
+        }
+        if (r.notes) text += `  - 備忘：${r.notes}\n`;
+        text += "\n";
+      });
+
+      text += "■ 備課代辦檢核：\n";
+      customTodos.forEach(t => {
+        text += `  [${t.done ? 'V' : ' '}] ${t.text}\n`;
+      });
+
+      // 複製到剪貼簿 (相容 iFrame 環境)
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      alert('下週教學規劃文字已複製至剪貼簿，可直接貼入備課日誌或 Line 備忘！');
+    }
+  </script>
+</body>
+</html>
