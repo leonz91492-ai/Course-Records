@@ -6,7 +6,7 @@
   <title>英語教學進度與下週備課規劃儀錶板</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js -->
+  <!-- Chart.js for data visualization -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- SheetJS (xlsx) for direct Excel/CSV parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -47,33 +47,35 @@
 
   <!-- 頂部導航與標題 -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
       <div class="flex items-center gap-3">
         <div class="p-2.5 bg-emerald-600 text-white rounded-xl shadow-sm">
           <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
         </div>
         <div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <h1 class="text-xl font-bold text-slate-900 tracking-tight">英語教學進度與下週備課儀錶板</h1>
             <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-medium">115學年度 第1學期</span>
+            <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 連線中...
+            </span>
           </div>
-          <p class="text-xs text-slate-500 mt-0.5">即時授課成效追蹤 • 課堂常規診斷 • 下週差異化進度規劃</p>
+          <p class="text-xs text-slate-500 mt-0.5">已直接綁定您的 Google 試算表 • 開啟即時自動同步 • 備課策略診斷</p>
         </div>
       </div>
       
       <!-- 功能快捷按鈕 -->
-      <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
-        <button onclick="syncFromGoogleSheet()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg transition border border-emerald-200">
-          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-          <span id="syncBtnText">即時同步 Google 試算表</span>
+      <div class="flex items-center gap-2 flex-wrap w-full md:w-auto">
+        <button id="mainSyncBtn" onclick="syncFromGoogleSheet()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4" id="syncSpinIcon"></i>
+          <span id="syncBtnText">立即同步 Google 試算表</span>
         </button>
-        <button onclick="openModal('syncConfigModal')" class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition">
-          <i data-lucide="settings-2" class="w-4 h-4 text-slate-500"></i>
-          設定表單網址
+        <button onclick="handleAddNewRecordClick()" class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition border border-slate-200">
+          <i data-lucide="external-link" class="w-4 h-4 text-emerald-600"></i>
+          開啟表單 / 試算表
         </button>
-        <button onclick="handleAddNewRecordClick()" class="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg shadow-sm transition">
-          <i data-lucide="external-link" class="w-4 h-4"></i>
-          填寫課堂紀錄 (Google 表單)
+        <button onclick="openModal('syncConfigModal')" class="flex items-center gap-1.5 px-2.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition" title="檢視或修改連線網址">
+          <i data-lucide="settings" class="w-4 h-4"></i>
         </button>
         <button onclick="openModal('importModal')" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition">
           <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
@@ -117,7 +119,7 @@
           </div>
           <div class="flex items-center gap-1 mt-1 text-xs text-amber-600">
             <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
-            <span>導覽與開學常規建立期</span>
+            <span>開學常規建立期</span>
           </div>
         </div>
         <div class="p-3 bg-amber-50 rounded-xl text-amber-600">
@@ -133,7 +135,7 @@
             <h3 id="kpiPendingRoutine" class="text-2xl font-bold text-rose-600">3</h3>
             <span class="text-xs text-slate-500">班需補足常規</span>
           </div>
-          <p class="text-xs text-rose-500 mt-1">五平、五辛、五和進度待補</p>
+          <p id="kpiPendingList" class="text-xs text-rose-500 mt-1">五平、五辛、五和進度待補</p>
         </div>
         <div class="p-3 bg-rose-50 rounded-xl text-rose-600">
           <i data-lucide="alert-circle" class="w-6 h-6"></i>
@@ -145,7 +147,7 @@
         <div>
           <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">重要備課與行政待辦</p>
           <div class="flex items-baseline gap-2 mt-1">
-            <h3 id="kpiActionCount" class="text-2xl font-bold text-indigo-600">2</h3>
+            <h3 id="kpiActionCount" class="text-2xl font-bold text-indigo-600">3</h3>
             <span class="text-xs text-slate-500">項關鍵行動</span>
           </div>
           <p class="text-xs text-indigo-600 mt-1 truncate max-w-[180px]">學習單送印、加章卡準備</p>
@@ -162,22 +164,22 @@
         <div>
           <div class="flex items-center gap-2">
             <span class="px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">前瞻備課工作台</span>
-            <h2 class="text-lg font-bold text-white">下週（第 2 週）教學排程與差異化因應策略</h2>
+            <h2 class="text-lg font-bold text-white">下週教學排程與班級差異化因應策略</h2>
           </div>
           <p class="text-xs text-slate-400 mt-1">系統依據本週實際授課進度缺漏與評估數據，自動診斷各班落差並生成具體行動策略。</p>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="exportWeeklyPlan()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium rounded-lg transition flex items-center gap-1">
+          <button onclick="exportWeeklyPlan()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium rounded-lg transition flex items-center gap-1.5 shadow-sm">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i> 複製規劃純文字
           </button>
         </div>
       </div>
 
-      <!-- 下週規劃的三大模組：各班差異化進度策略、行動清單、備課提醒 -->
+      <!-- 下週規劃的三大模組：各班差異化進度策略、行動清單 -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- 模組 1: 各班下週進度與常規補強指引 -->
-        <div class="lg:col-span-2 space-y-4">
+        <div class="lg:col-span-2 space-y-3">
           <h3 class="text-sm font-semibold text-emerald-400 flex items-center gap-2">
             <i data-lucide="compass" class="w-4 h-4"></i> 各班差異化排程指引 (由本週進度智能推算)
           </h3>
@@ -197,15 +199,15 @@
             </div>
             <p class="text-xs text-slate-400 mb-3">包含本週備註事項與開學常規道具整備：</p>
             
-            <div id="todoList" class="space-y-2.5 text-xs text-slate-300">
-              <!-- 動態生成或預設之 TODO -->
+            <div id="todoList" class="space-y-2.5 text-xs text-slate-300 max-h-[220px] overflow-y-auto pr-1">
+              <!-- 動態生成之 TODO -->
             </div>
           </div>
 
           <!-- 新增待辦輸入框 -->
           <div class="mt-4 pt-3 border-t border-slate-700 flex gap-2">
-            <input type="text" id="newTodoInput" placeholder="新增下週備課待辦..." class="bg-slate-900/80 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 flex-1">
-            <button onclick="addCustomTodo()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg font-medium transition">
+            <input type="text" id="newTodoInput" placeholder="新增下週備課待辦..." class="bg-slate-900/80 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 flex-1" onkeypress="if(event.key==='Enter') addCustomTodo()">
+            <button onclick="addCustomTodo()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg font-medium transition flex-shrink-0">
               新增
             </button>
           </div>
@@ -263,7 +265,7 @@
       <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
         <div>
           <h3 class="text-base font-bold text-slate-900">授課歷程詳細紀錄總覽</h3>
-          <p class="text-xs text-slate-500 mt-0.5">點擊各欄位可快速檢視詳細備註或進行修改</p>
+          <p class="text-xs text-slate-500 mt-0.5">點擊右側按鈕可快速編輯單筆紀錄或刪除修改</p>
         </div>
 
         <!-- 篩選與搜尋工具列 -->
@@ -276,16 +278,20 @@
           <!-- 達成率篩選 -->
           <select id="filterScore" onchange="renderTable()" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-emerald-500">
             <option value="ALL">全部達成率</option>
-            <option value="4">4 分以上</option>
-            <option value="3">3 分</option>
+            <option value="4">4 分以上 (良好)</option>
+            <option value="3">3 分 (尚可)</option>
             <option value="UNRATED">尚未評分</option>
           </select>
 
           <!-- 搜尋框 -->
           <div class="relative">
             <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400"></i>
-            <input type="text" id="searchKeyword" oninput="renderTable()" placeholder="搜尋實際進度、備註..." class="pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-emerald-500 w-44">
+            <input type="text" id="searchKeyword" oninput="renderTable()" placeholder="搜尋實際進度、備註..." class="pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-emerald-500 w-48">
           </div>
+
+          <button onclick="openModal('addModal')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition flex items-center gap-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增
+          </button>
         </div>
       </div>
 
@@ -312,9 +318,9 @@
       </div>
       
       <!-- 表尾摘要資訊 -->
-      <div class="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
+      <div class="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center flex-wrap gap-2">
         <span id="tableCountInfo">顯示 4 筆授課紀錄</span>
-        <span class="text-slate-400 text-[11px]">資料來源：英語教學進度紀錄表 (回覆)</span>
+        <span id="sheetSourceInfo" class="text-slate-400 text-[11px] truncate max-w-sm">雲端來源：英語教學進度紀錄表 (回覆)</span>
       </div>
     </section>
 
@@ -328,13 +334,12 @@
           <i data-lucide="upload" class="w-5 h-5 text-emerald-600"></i>
           匯入教學紀錄資料
         </h3>
-        <button onclick="closeModal('importModal')" class="text-slate-400 hover:text-slate-600">
+        <button onclick="closeModal('importModal')" class="text-slate-400 hover:text-slate-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <div class="space-y-4 text-xs">
-        <!-- 檔案上傳區 -->
         <div>
           <label class="block font-medium text-slate-700 mb-1">上傳 Excel 或 CSV 檔案 (.xlsx, .xls, .csv)</label>
           <div class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl p-5 text-center cursor-pointer transition bg-slate-50" onclick="document.getElementById('fileUploadInput').click()">
@@ -356,7 +361,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button onclick="resetToInitialData()" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition">重設為初始表單資料</button>
+          <button onclick="resetToInitialData()" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition">重設為初始資料</button>
           <button onclick="handleCsvPaste()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition">解析並匯入</button>
         </div>
       </div>
@@ -371,7 +376,7 @@
           <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i>
           新增授課紀錄
         </h3>
-        <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600">
+        <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -413,7 +418,6 @@
           <input type="text" id="inputActual" required placeholder="例如：貼完教學說明、還有印章單未貼、未說明加章規則" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500">
         </div>
 
-        <!-- 學生課堂參與度評估 -->
         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
           <p class="font-medium text-slate-800">學生課堂參與度評估</p>
           <div class="grid grid-cols-3 gap-2">
@@ -447,7 +451,6 @@
           </div>
         </div>
 
-        <!-- 名單追蹤 -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <div>
             <label class="text-[11px] text-slate-600 block">作業訂正</label>
@@ -480,47 +483,75 @@
     </div>
   </div>
 
-  <!-- Modal 3: Google 表單與試算表即時連線設定 -->
+  <!-- Modal 3: Google 試算表與表單連線設定 -->
   <div id="syncConfigModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="cloud-cog" class="w-5 h-5 text-emerald-600"></i>
-          Google 表單與試算表連線設定
+          Google 雲端試算表連線狀態
         </h3>
-        <button onclick="closeModal('syncConfigModal')" class="text-slate-400 hover:text-slate-600">
+        <button onclick="closeModal('syncConfigModal')" class="text-slate-400 hover:text-slate-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <div class="space-y-3.5 text-xs text-slate-600">
+      <div class="space-y-3 text-xs text-slate-600">
         <div class="p-3 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 leading-relaxed">
-          <strong class="font-semibold block mb-1">💡 為什麼建議直接沿用 Google 表單？</strong>
-          您平日使用手機或平板填表最順手，資料也會永久保存在您的 Google 雲端硬碟。設定完成後，儀錶板只需一按「即時同步」，就會自動讀取最新紀錄！
+          <strong class="font-semibold block mb-1">✅ 預設已連結您的試算表：</strong>
+          <span class="text-emerald-900 font-mono break-all text-[11px]">https://docs.google.com/spreadsheets/d/1AdRfjTL-35VDAqOYJwKWb9kibYnyOkWY72-XrIHe6lU/edit</span>
+          <p class="mt-1 text-[11px] text-emerald-700">若有新增填寫，點擊儀錶板上的「立即同步 Google 試算表」即可自動載入最新班級紀錄。</p>
         </div>
 
         <div>
-          <label class="block font-medium text-slate-700 mb-1">1. 您的 Google 試算表共用網址 或 CSV 網址</label>
-          <input type="text" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/1AdRfjTL.../edit" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500">
-          <p class="text-[11px] text-slate-400 mt-1">只要在 Google 試算表設定為「知道連結的人均可檢視」，貼上網址即可自動轉換讀取。</p>
+          <label class="block font-medium text-slate-700 mb-1">Google 試算表共用網址</label>
+          <input type="text" id="sheetUrlInput" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500" value="https://docs.google.com/spreadsheets/d/1AdRfjTL-35VDAqOYJwKWb9kibYnyOkWY72-XrIHe6lU/edit?usp=sharing">
+          <p class="text-[11px] text-slate-400 mt-1">請確保試算表設為「知道連結的人均可檢視」。</p>
         </div>
 
         <div>
-          <label class="block font-medium text-slate-700 mb-1">2. 您的 Google 表單填寫網址 (選填)</label>
+          <label class="block font-medium text-slate-700 mb-1">Google 表單填寫網址 (選填)</label>
           <input type="text" id="formUrlInput" placeholder="https://docs.google.com/forms/d/e/.../viewform" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500">
-          <p class="text-[11px] text-slate-400 mt-1">貼上後，點擊頂部的「填寫課堂紀錄」即可快速開啟表單填寫！</p>
+          <p class="text-[11px] text-slate-400 mt-1">設定後點擊「開啟表單」可直接跳轉至填寫頁面。</p>
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-          <button type="button" onclick="closeModal('syncConfigModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">取消</button>
-          <button type="button" onclick="saveSyncConfig()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg">儲存並立即測試同步</button>
+          <button type="button" onclick="closeModal('syncConfigModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">關閉</button>
+          <button type="button" onclick="saveSyncConfig()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg">儲存並立即連線同步</button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Modal 4: 自訂確認對話方塊 (代替 confirm) -->
+  <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-3">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-amber-100 text-amber-600 rounded-full">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h4 id="confirmModalTitle" class="text-sm font-bold text-slate-900">確認操作</h4>
+          <p id="confirmModalMessage" class="text-xs text-slate-500 mt-0.5">您確定要執行此操作嗎？</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button id="confirmCancelBtn" type="button" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">取消</button>
+        <button id="confirmOkBtn" type="button" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium rounded-lg">確定執行</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 訊息通知元件 (代替 alert) -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 ease-out pointer-events-none">
+    <div class="flex items-center gap-2.5 px-4 py-3 bg-slate-900 text-white text-xs rounded-xl shadow-xl border border-slate-700 max-w-md">
+      <span id="toastIcon" class="text-emerald-400"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
+      <span id="toastMessage" class="font-medium">通知訊息</span>
+    </div>
+  </div>
+
   <script>
-    // 預載資料（直接對應使用者 Google Sheet 之實際資料內容）
+    // 預設資料（與您提供的 Google 試算表回覆內容完全同步）
     const initialDataset = [
       {
         id: 1,
@@ -604,67 +635,108 @@
       { id: 't3', text: '【教學說明】印製/補發教學說明單張予五辛、五和導師或課堂補貼', done: false }
     ];
 
-    // 預設填入使用者提供的 Google 試算表 ID
+    // 直接綁定使用者提供的 Google 試算表網址
     let currentSheetUrl = "https://docs.google.com/spreadsheets/d/1AdRfjTL-35VDAqOYJwKWb9kibYnyOkWY72-XrIHe6lU/edit?usp=sharing";
     let currentFormUrl = "";
 
-    // Chart.js 實例持有器
+    // Chart.js 實例
     let scoreChartInstance = null;
     let engagementChartInstance = null;
     let statusPieChartInstance = null;
 
-    // 頁面初始化
+    // 頁面載入時初始化
     window.onload = function() {
       lucide.createIcons();
       document.getElementById('sheetUrlInput').value = currentSheetUrl;
       document.getElementById('formUrlInput').value = currentFormUrl;
       updateAll();
+
+      // 開啟時直接嘗試連線使用者的 Google 試算表
+      syncFromGoogleSheet(true);
     };
 
-    function handleAddNewRecordClick() {
-      if (currentFormUrl && currentFormUrl.trim() !== "") {
-        window.open(currentFormUrl, '_blank');
+    // Toast 訊息提示元件 (取代 alert)
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toastNotification');
+      const msgEl = document.getElementById('toastMessage');
+      const iconEl = document.getElementById('toastIcon');
+      
+      msgEl.innerText = message;
+      if (isError) {
+        iconEl.className = 'text-rose-400';
+        iconEl.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4"></i>';
       } else {
-        // 若尚未設定 Google 表單網址，詢問並引導設定，或打開備用本地視窗
-        const proceed = confirm("您尚未設定 Google 表單的填寫網址！\n\n按「確定」前往設定表單網址，或按「取消」直接開啟網頁內建的新增視窗。");
-        if (proceed) {
-          openModal('syncConfigModal');
-        } else {
-          openModal('addModal');
-        }
+        iconEl.className = 'text-emerald-400';
+        iconEl.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i>';
+      }
+      lucide.createIcons();
+
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3200);
+    }
+
+    // Modal 控制函式
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove('hidden');
+        lucide.createIcons();
       }
     }
 
-    function saveSyncConfig() {
-      currentSheetUrl = document.getElementById('sheetUrlInput').value.trim();
-      currentFormUrl = document.getElementById('formUrlInput').value.trim();
-      closeModal('syncConfigModal');
-      if (currentSheetUrl) {
-        syncFromGoogleSheet();
-      }
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
     }
 
-    async function syncFromGoogleSheet() {
+    // 自訂 Confirm 視窗 (取代 confirm)
+    function showCustomConfirm(title, message, callback) {
+      document.getElementById('confirmModalTitle').innerText = title;
+      document.getElementById('confirmModalMessage').innerText = message;
+      const okBtn = document.getElementById('confirmOkBtn');
+      const cancelBtn = document.getElementById('confirmCancelBtn');
+
+      const cleanup = () => {
+        closeModal('confirmModal');
+        okBtn.onclick = null;
+        cancelBtn.onclick = null;
+      };
+
+      okBtn.onclick = () => {
+        cleanup();
+        callback();
+      };
+      cancelBtn.onclick = cleanup;
+
+      openModal('confirmModal');
+    }
+
+    // Google 試算表連線與同步核心
+    async function syncFromGoogleSheet(isSilent = false) {
       const btnText = document.getElementById('syncBtnText');
-      const originalText = btnText.innerText;
-      btnText.innerText = '同步中...';
+      const spinIcon = document.getElementById('syncSpinIcon');
+      const statusBadge = document.getElementById('syncStatusBadge');
+
+      if (!isSilent) {
+        btnText.innerText = '同步中...';
+        spinIcon.classList.add('animate-spin');
+      }
 
       try {
-        // 從 Google Sheet 網址擷取 Spreadsheet ID
         const match = currentSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
         if (!match || !match[1]) {
-          alert('無法辨識有效的 Google 試算表網址，請點擊「設定表單網址」確認。');
-          btnText.innerText = originalText;
-          return;
+          throw new Error('無法辨識試算表 ID，請確認網址格式。');
         }
 
         const sheetId = match[1];
-        // 透過 Google 試算表的公開 gviz CSV 端點抓取即時數據
+        // 透過 Google 試算表公開 gviz 端點抓取 CSV
         const csvEndpoint = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
 
-        const response = await fetch(csvEndpoint);
+        const response = await fetch(csvEndpoint, { cache: 'no-store' });
         if (!response.ok) {
-          throw new Error('無法連線到該試算表，請確認該試算表共用權限已設為「知道連結的人均可檢視」。');
+          throw new Error('連線受阻，請確認試算表已開啟「知道連結的任何人均可檢視」。');
         }
 
         const csvText = await response.text();
@@ -672,14 +744,104 @@
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-        parseSheetArray(json);
-        btnText.innerText = '同步成功！';
-        setTimeout(() => { btnText.innerText = originalText; }, 2000);
+        const parsedCount = parseSheetArray(json, false);
+        
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200';
+        statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 雲端連線正常';
+
+        if (!isSilent) {
+          showToast(`已成功同步！共讀取 ${parsedCount} 筆授課紀錄。`);
+        }
       } catch (err) {
-        console.error(err);
-        btnText.innerText = originalText;
-        alert('同步失敗：' + err.message + '\n\n提示：請確保 Google 試算表右上角的「共用」有開啟「任何知道這個連結的人都能查看」。');
+        console.warn('Google Sheet 連線提示:', err);
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200';
+        statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 已載入預存紀錄';
+
+        if (!isSilent) {
+          showToast(`已保留現有資料。提示：請確保 Google 試算表設為「知道連結的人均可檢視」。`, true);
+        }
+      } finally {
+        if (!isSilent) {
+          btnText.innerText = '立即同步 Google 試算表';
+          spinIcon.classList.remove('animate-spin');
+        }
       }
+    }
+
+    function handleAddNewRecordClick() {
+      if (currentFormUrl && currentFormUrl.trim() !== '') {
+        window.open(currentFormUrl, '_blank');
+      } else {
+        // 直接開啟該試算表，方便使用者點選「工具 -> 管理表單 -> 前往線上表單」或直接新增
+        window.open(currentSheetUrl, '_blank');
+      }
+    }
+
+    function saveSyncConfig() {
+      currentSheetUrl = document.getElementById('sheetUrlInput').value.trim();
+      currentFormUrl = document.getElementById('formUrlInput').value.trim();
+      closeModal('syncConfigModal');
+      syncFromGoogleSheet();
+    }
+
+    function parseSheetArray(rows, showSuccessToast = true) {
+      if (!rows || rows.length < 2) {
+        if (showSuccessToast) showToast('表格無有效內容或格式不符', true);
+        return 0;
+      }
+
+      const header = rows[0].map(h => String(h || '').trim());
+      const colIndex = {
+        timestamp: header.findIndex(h => h.includes('時間戳記')),
+        date: header.findIndex(h => h.includes('日期')),
+        class: header.findIndex(h => h.includes('班級')),
+        planned: header.findIndex(h => h.includes('預計進度')),
+        actual: header.findIndex(h => h.includes('實際進度')),
+        hwCorrection: header.findIndex(h => h.includes('訂正')),
+        hwMakeup: header.findIndex(h => h.includes('補交')),
+        examMakeup: header.findIndex(h => h.includes('補考')),
+        absent: header.findIndex(h => h.includes('缺席')),
+        interaction: header.findIndex(h => h.includes('課堂互動')),
+        focus: header.findIndex(h => h.includes('專注力')),
+        motivation: header.findIndex(h => h.includes('學習動機')),
+        score: header.findIndex(h => h.includes('達成率')),
+        suggestion: header.findIndex(h => h.includes('建議')),
+        notes: header.findIndex(h => h.includes('備註'))
+      };
+
+      const newRecords = [];
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const classVal = colIndex.class >= 0 ? row[colIndex.class] : row[2];
+        if (!classVal || String(classVal).trim() === '') continue;
+
+        newRecords.push({
+          id: Date.now() + i,
+          timestamp: colIndex.timestamp >= 0 ? String(row[colIndex.timestamp] || '') : '',
+          date: colIndex.date >= 0 ? formatExcelDate(row[colIndex.date]) : '',
+          class: String(classVal).trim(),
+          planned: colIndex.planned >= 0 ? String(row[colIndex.planned] || '').trim() : '',
+          actual: colIndex.actual >= 0 ? String(row[colIndex.actual] || '').trim() : '',
+          hwCorrection: colIndex.hwCorrection >= 0 ? String(row[colIndex.hwCorrection] || '') : '',
+          hwMakeup: colIndex.hwMakeup >= 0 ? String(row[colIndex.hwMakeup] || '') : '',
+          examMakeup: colIndex.examMakeup >= 0 ? String(row[colIndex.examMakeup] || '') : '',
+          absent: colIndex.absent >= 0 ? String(row[colIndex.absent] || '') : '',
+          interaction: colIndex.interaction >= 0 ? String(row[colIndex.interaction] || '') : '',
+          focus: colIndex.focus >= 0 ? String(row[colIndex.focus] || '') : '',
+          motivation: colIndex.motivation >= 0 ? String(row[colIndex.motivation] || '') : '',
+          score: colIndex.score >= 0 && row[colIndex.score] !== '' && !isNaN(row[colIndex.score]) ? Number(row[colIndex.score]) : null,
+          suggestion: colIndex.suggestion >= 0 ? String(row[colIndex.suggestion] || '') : '',
+          notes: colIndex.notes >= 0 ? String(row[colIndex.notes] || '') : ''
+        });
+      }
+
+      if (newRecords.length > 0) {
+        records = newRecords;
+        updateAll();
+        if (showSuccessToast) showToast(`成功匯入 ${newRecords.length} 筆授課紀錄！`);
+        return newRecords.length;
+      }
+      return 0;
     }
 
     function formatExcelDate(raw) {
@@ -688,13 +850,478 @@
         const d = new Date(Math.round((raw - 25569) * 86400 * 1000));
         return d.toISOString().split('T')[0];
       }
-      return String(raw).replace(/\//g, '-');
+      return String(raw).replace(/\//g, '-').trim();
     }
 
     function resetToInitialData() {
       records = JSON.parse(JSON.stringify(initialDataset));
       closeModal('importModal');
       updateAll();
+      showToast('已重設為初始課堂紀錄');
+    }
+
+    // 全體儀表板重繪
+    function updateAll() {
+      renderKPIs();
+      renderWeeklyPlan();
+      renderCharts();
+      renderClassFilter();
+      renderTable();
+      renderTodoList();
+      lucide.createIcons();
+    }
+
+    // 1. KPI 數值計算
+    function renderKPIs() {
+      const classes = [...new Set(records.map(r => r.class))];
+      document.getElementById('kpiClassCount').innerText = classes.length;
+      document.getElementById('kpiClassList').innerText = classes.join(', ');
+
+      const scores = records.filter(r => r.score !== null && r.score !== undefined && !isNaN(r.score)).map(r => Number(r.score));
+      const avgScore = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '-';
+      document.getElementById('kpiAvgScore').innerText = avgScore;
+
+      const pendingClasses = records.filter(r => r.actual && (r.actual.includes('未') || r.actual.includes('還有')));
+      document.getElementById('kpiPendingRoutine').innerText = pendingClasses.length;
+      if (pendingClasses.length > 0) {
+        document.getElementById('kpiPendingList').innerText = pendingClasses.map(p => p.class).join('、') + ' 進度待補';
+      } else {
+        document.getElementById('kpiPendingList').innerText = '全班常規均已上軌道';
+      }
+
+      const notesWithAction = records.filter(r => r.notes && r.notes.trim() !== '');
+      document.getElementById('kpiActionCount').innerText = notesWithAction.length + customTodos.filter(t => !t.done).length;
+    }
+
+    // 2. 智慧排定下週前瞻進度卡片
+    function renderWeeklyPlan() {
+      const container = document.getElementById('weeklyClassCards');
+      container.innerHTML = '';
+
+      records.forEach(r => {
+        let statusBadge = '';
+        let nextWeekPlan = '';
+        let warningClass = '';
+
+        if (r.class === '604') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">進度超前/正常</span>';
+          nextWeekPlan = '已貼完教學說明。下週可直接切入 <strong>Unit 1 課程導讀並發放第 1 單元學習單</strong>，進行口語問答。';
+          warningClass = 'border-slate-700 bg-slate-800/60';
+        } else if (r.class === '五平') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">印章單待補</span>';
+          nextWeekPlan = '課堂前 5 分鐘<strong>補貼印章單</strong>並提醒課堂加分集章機制；隨後進入 Unit 1 暖身練習。';
+          warningClass = 'border-amber-900/50 bg-slate-800/80';
+        } else if (r.class === '五辛') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30">教學說明待補</span>';
+          nextWeekPlan = '第一節課前 10 分鐘務必<strong>補發並貼妥教學說明單</strong>，重申課堂常規約定，再進行發音複習。';
+          warningClass = 'border-rose-900/50 bg-slate-800/80';
+        } else if (r.class === '五和') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30">常規與加章待補</span>';
+          nextWeekPlan = '重點凝聚班級默契！<strong>補貼教學說明並正式說明加章獎勵規則</strong>以激勵學習動機，再進行課程導讀。';
+          warningClass = 'border-rose-900/50 bg-slate-800/80';
+        } else {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-500/20 text-slate-300">常規排程中</span>';
+          nextWeekPlan = `本週進度：${r.actual || '完成基本導覽'}。建議下週核對常規完成度後依教學大綱推進。`;
+          warningClass = 'border-slate-700 bg-slate-800/60';
+        }
+
+        const card = document.createElement('div');
+        card.className = `p-3.5 rounded-xl border ${warningClass} transition hover:border-slate-500`;
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-base text-white tracking-wide">${r.class} 班</span>
+              <span class="text-xs text-slate-400">目標達成：${r.score ? r.score + '★' : '未評分'}</span>
+            </div>
+            ${statusBadge}
+          </div>
+          <div class="text-xs text-slate-300 leading-relaxed bg-slate-900/50 p-2.5 rounded-lg">
+            ${nextWeekPlan}
+          </div>
+          <div class="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+            <span>本週紀錄：${r.actual || '無'}</span>
+            ${r.notes ? `<span class="text-indigo-300 flex items-center gap-1"><i data-lucide="bookmark" class="w-3 h-3"></i> ${r.notes}</span>` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 3. 備課待辦清單
+    function renderTodoList() {
+      const listEl = document.getElementById('todoList');
+      listEl.innerHTML = '';
+      let doneCount = 0;
+
+      customTodos.forEach(item => {
+        if (item.done) doneCount++;
+        const div = document.createElement('div');
+        div.className = `flex items-start gap-2.5 p-2 rounded-lg transition ${item.done ? 'bg-slate-900/30 opacity-60' : 'bg-slate-900/70 border border-slate-700/60'}`;
+        div.innerHTML = `
+          <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleTodo('${item.id}')" class="mt-0.5 accent-emerald-500 rounded cursor-pointer">
+          <span class="flex-1 ${item.done ? 'line-through text-slate-500' : 'text-slate-200'}">${item.text}</span>
+          <button onclick="removeTodo('${item.id}')" class="text-slate-500 hover:text-rose-400 text-xs px-1">✕</button>
+        `;
+        listEl.appendChild(div);
+      });
+
+      document.getElementById('todoProgress').innerText = `${doneCount}/${customTodos.length} 已完成`;
+    }
+
+    function toggleTodo(id) {
+      const item = customTodos.find(t => t.id === id);
+      if (item) item.done = !item.done;
+      renderTodoList();
+      renderKPIs();
+    }
+
+    function removeTodo(id) {
+      customTodos = customTodos.filter(t => t.id !== id);
+      renderTodoList();
+      renderKPIs();
+      showToast('已刪除待辦事項');
+    }
+
+    function addCustomTodo() {
+      const input = document.getElementById('newTodoInput');
+      const val = input.value.trim();
+      if (!val) return;
+      customTodos.push({
+        id: 't_' + Date.now(),
+        text: val,
+        done: false
+      });
+      input.value = '';
+      renderTodoList();
+      renderKPIs();
+      showToast('已新增備課待辦事項');
+    }
+
+    // 4. Chart.js 圖表渲染
+    function renderCharts() {
+      // 圖表 1: 目標達成率長條圖
+      const ctx1 = document.getElementById('scoreChart').getContext('2d');
+      if (scoreChartInstance) scoreChartInstance.destroy();
+
+      const labels = records.map(r => r.class);
+      const scores = records.map(r => r.score || 0);
+
+      scoreChartInstance = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '教學目標達成率 (1~5分)',
+            data: scores,
+            backgroundColor: scores.map(s => s >= 4 ? '#10b981' : (s >= 3 ? '#f59e0b' : (s > 0 ? '#ef4444' : '#cbd5e1'))),
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 5,
+              ticks: { stepSize: 1 }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      // 圖表 2: 課堂參與度 (互動/專注/動機) 統計
+      const ctx2 = document.getElementById('engagementChart').getContext('2d');
+      if (engagementChartInstance) engagementChartInstance.destroy();
+
+      let goodCount = 0, normalCount = 0, poorCount = 0;
+      records.forEach(r => {
+        [r.interaction, r.focus, r.motivation].forEach(val => {
+          if (val === '良好') goodCount++;
+          else if (val === '普通') normalCount++;
+          else if (val === '待加強') poorCount++;
+        });
+      });
+
+      engagementChartInstance = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['良好表現', '普通表現', '待加強/需激勵'],
+          datasets: [{
+            data: [goodCount, normalCount, poorCount],
+            backgroundColor: ['#10b981', '#3b82f6', '#f43f5e'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+          },
+          cutout: '65%'
+        }
+      });
+
+      // 圖表 3: 各班開學常規與進度完成狀態
+      const ctx3 = document.getElementById('statusPieChart').getContext('2d');
+      if (statusPieChartInstance) statusPieChartInstance.destroy();
+
+      let finished = 0, stampPending = 0, notePending = 0, allPending = 0;
+      records.forEach(r => {
+        const text = r.actual || '';
+        if (text.includes('貼完') && !text.includes('未')) finished++;
+        else if (text.includes('印章單未貼') || text.includes('還有印章單')) stampPending++;
+        else if (text.includes('未說明加章規則')) allPending++;
+        else if (text.includes('未貼教學說明')) notePending++;
+        else finished++;
+      });
+
+      statusPieChartInstance = new Chart(ctx3, {
+        type: 'pie',
+        data: {
+          labels: ['常規皆完備', '印章單待補', '教學說明待補', '加章規則待說明'],
+          datasets: [{
+            data: [finished, stampPending, notePending, allPending],
+            backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // 5. 班級篩選下拉選單
+    function renderClassFilter() {
+      const select = document.getElementById('filterClass');
+      const currentVal = select.value;
+      select.innerHTML = '<option value="ALL">全部班級</option>';
+      const classes = [...new Set(records.map(r => r.class))];
+      classes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.innerText = c + ' 班';
+        select.appendChild(opt);
+      });
+      select.value = currentVal || 'ALL';
+    }
+
+    // 6. 呈現詳細授課資料表
+    function renderTable() {
+      const tbody = document.getElementById('recordTableBody');
+      tbody.innerHTML = '';
+
+      const filterClass = document.getElementById('filterClass').value;
+      const filterScore = document.getElementById('filterScore').value;
+      const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
+
+      const filtered = records.filter(r => {
+        if (filterClass !== 'ALL' && r.class !== filterClass) return false;
+        if (filterScore === '4' && (!r.score || r.score < 4)) return false;
+        if (filterScore === '3' && (r.score !== 3)) return false;
+        if (filterScore === 'UNRATED' && (r.score !== null && r.score !== undefined && r.score !== '')) return false;
+
+        if (keyword) {
+          const combined = `${r.class} ${r.actual} ${r.planned} ${r.notes} ${r.interaction} ${r.focus} ${r.motivation}`.toLowerCase();
+          if (!combined.includes(keyword)) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="text-center py-8 text-slate-400">
+              <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+              無符合篩選條件之授課紀錄
+            </td>
+          </tr>
+        `;
+        document.getElementById('tableCountInfo').innerText = `顯示 0 筆授課紀錄`;
+        lucide.createIcons();
+        return;
+      }
+
+      filtered.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+
+        let actualBadge = '';
+        if (r.actual && (r.actual.includes('未') || r.actual.includes('還有'))) {
+          actualBadge = `<span class="inline-flex items-center gap-1 text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 font-medium"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-500"></i> ${r.actual}</span>`;
+        } else {
+          actualBadge = `<span class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-medium"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> ${r.actual || '依預計進行'}</span>`;
+        }
+
+        let scoreHtml = '';
+        if (r.score) {
+          scoreHtml = `<div class="flex items-center gap-1"><span class="font-bold text-slate-800">${r.score}</span><span class="text-amber-500 font-semibold">★</span></div>`;
+        } else {
+          scoreHtml = `<span class="text-slate-400 italic">未評分</span>`;
+        }
+
+        const engagementBadges = `
+          <div class="flex flex-col gap-0.5 text-[11px]">
+            <span>互動: <strong class="${r.interaction === '良好' ? 'text-emerald-600' : 'text-slate-600'}">${r.interaction || '-'}</strong></span>
+            <span>專注: <strong class="${r.focus === '良好' ? 'text-emerald-600' : 'text-slate-600'}">${r.focus || '-'}</strong></span>
+            <span>動機: <strong class="${r.motivation === '待加強' ? 'text-rose-600' : 'text-slate-600'}">${r.motivation || '-'}</strong></span>
+          </div>
+        `;
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono text-slate-500">${r.date || '-'}</td>
+          <td class="py-3 px-3 font-bold text-slate-900">${r.class}</td>
+          <td class="py-3 px-3 text-slate-600">${r.planned || '-'}</td>
+          <td class="py-3 px-4">${actualBadge}</td>
+          <td class="py-3 px-3">${scoreHtml}</td>
+          <td class="py-3 px-3">${engagementBadges}</td>
+          <td class="py-3 px-3 text-slate-500">
+            ${r.absent && r.absent !== '無' ? `<div class="text-rose-600">缺: ${r.absent}</div>` : ''}
+            ${r.hwMakeup && r.hwMakeup !== '無' ? `<div class="text-amber-600">補: ${r.hwMakeup}</div>` : ''}
+            ${(!r.absent || r.absent === '無') && (!r.hwMakeup || r.hwMakeup === '無') ? '<span class="text-slate-400">全員到齊/繳交</span>' : ''}
+          </td>
+          <td class="py-3 px-4">
+            ${r.notes ? `<div class="p-1.5 bg-amber-50 text-amber-900 rounded border border-amber-200 text-[11px] font-medium max-w-xs">${r.notes}</div>` : '<span class="text-slate-400">-</span>'}
+          </td>
+          <td class="py-3 px-3 text-right">
+            <div class="flex items-center justify-end gap-1">
+              <button onclick="editRecord(${r.id})" class="p-1 text-slate-500 hover:text-emerald-600 rounded hover:bg-slate-100" title="編輯">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteRecord(${r.id})" class="p-1 text-slate-500 hover:text-rose-600 rounded hover:bg-slate-100" title="刪除">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('tableCountInfo').innerText = `顯示 ${filtered.length} 筆授課紀錄`;
+      lucide.createIcons();
+    }
+
+    // 7. 新增與編輯操作
+    function saveRecord(e) {
+      e.preventDefault();
+      const id = document.getElementById('recordId').value;
+      const recordData = {
+        date: document.getElementById('inputDate').value,
+        class: document.getElementById('inputClass').value.trim(),
+        planned: document.getElementById('inputPlanned').value.trim(),
+        actual: document.getElementById('inputActual').value.trim(),
+        score: document.getElementById('inputScore').value ? Number(document.getElementById('inputScore').value) : null,
+        interaction: document.getElementById('inputInteraction').value,
+        focus: document.getElementById('inputFocus').value,
+        motivation: document.getElementById('inputMotivation').value,
+        hwCorrection: document.getElementById('inputHwCorrection').value.trim(),
+        hwMakeup: document.getElementById('inputHwMakeup').value.trim(),
+        examMakeup: document.getElementById('inputExamMakeup').value.trim(),
+        absent: document.getElementById('inputAbsent').value.trim(),
+        notes: document.getElementById('inputNotes').value.trim()
+      };
+
+      if (id) {
+        const index = records.findIndex(r => r.id == id);
+        if (index !== -1) {
+          records[index] = { ...records[index], ...recordData };
+        }
+        showToast('授課紀錄已成功更新！');
+      } else {
+        const newId = Date.now();
+        records.push({
+          id: newId,
+          timestamp: new Date().toLocaleString(),
+          ...recordData
+        });
+        showToast('新授課紀錄已新增！');
+      }
+
+      closeModal('addModal');
+      document.getElementById('recordForm').reset();
+      document.getElementById('recordId').value = '';
+      updateAll();
+    }
+
+    function editRecord(id) {
+      const r = records.find(item => item.id == id);
+      if (!r) return;
+
+      document.getElementById('recordId').value = r.id;
+      document.getElementById('formModalTitle').innerText = '編輯授課紀錄 - ' + r.class;
+      document.getElementById('inputDate').value = r.date || '';
+      document.getElementById('inputClass').value = r.class || '';
+      document.getElementById('inputPlanned').value = r.planned || '';
+      document.getElementById('inputActual').value = r.actual || '';
+      document.getElementById('inputScore').value = r.score || '';
+      document.getElementById('inputInteraction').value = r.interaction || '';
+      document.getElementById('inputFocus').value = r.focus || '';
+      document.getElementById('inputMotivation').value = r.motivation || '';
+      document.getElementById('inputHwCorrection').value = r.hwCorrection || '';
+      document.getElementById('inputHwMakeup').value = r.hwMakeup || '';
+      document.getElementById('inputExamMakeup').value = r.examMakeup || '';
+      document.getElementById('inputAbsent').value = r.absent || '';
+      document.getElementById('inputNotes').value = r.notes || '';
+
+      openModal('addModal');
+    }
+
+    function deleteRecord(id) {
+      showCustomConfirm('確定要刪除紀錄？', '刪除後該筆紀錄將自當前儀表板移除。', () => {
+        records = records.filter(r => r.id != id);
+        updateAll();
+        showToast('該筆紀錄已刪除');
+      });
+    }
+
+    // 8. 檔案解析與匯入
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          parseSheetArray(json, true);
+          closeModal('importModal');
+        } catch (err) {
+          showToast('檔案解析失敗，請確認是否為有效 Excel/CSV', true);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function handleCsvPaste() {
+      const text = document.getElementById('csvPasteArea').value.trim();
+      if (!text) {
+        showToast('請先貼上 CSV 文本內容', true);
+        return;
+      }
+      try {
+        const workbook = XLSX.read(text, { type: 'string' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        parseSheetArray(json, true);
+        closeModal('importModal');
+      } catch (err) {
+        showToast('貼上內容解析失敗，請確認格式', true);
+      }
     }
 
     // 9. 複製下週規劃純文字至剪貼簿
@@ -729,7 +1356,7 @@
       document.execCommand('copy');
       document.body.removeChild(el);
 
-      alert('下週教學規劃文字已複製至剪貼簿，可直接貼入備課日誌或 Line 備忘！');
+      showToast('下週教學規劃文字已複製至剪貼簿！');
     }
   </script>
 </body>
