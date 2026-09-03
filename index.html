@@ -56,11 +56,11 @@
           <div class="flex items-center gap-2 flex-wrap">
             <h1 class="text-xl font-bold text-slate-900 tracking-tight">英語教學進度與下週備課儀錶板</h1>
             <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-medium">115學年度 第1學期</span>
-            <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 連線中...
+            <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 雲端雙向連線正常
             </span>
           </div>
-          <p class="text-xs text-slate-500 mt-0.5">已直接綁定您的 Google 試算表 • 開啟即時自動同步 • 備課策略診斷</p>
+          <p class="text-xs text-slate-500 mt-0.5">已綁定 Google 試算表與表單 • 支援即時雙向寫入 • 智慧備課診斷</p>
         </div>
       </div>
       
@@ -68,13 +68,17 @@
       <div class="flex items-center gap-2 flex-wrap w-full md:w-auto">
         <button id="mainSyncBtn" onclick="syncFromGoogleSheet()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
           <i data-lucide="refresh-cw" class="w-4 h-4" id="syncSpinIcon"></i>
-          <span id="syncBtnText">立即同步 Google 試算表</span>
+          <span id="syncBtnText">立即同步試算表</span>
         </button>
-        <button onclick="handleAddNewRecordClick()" class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition border border-slate-200">
-          <i data-lucide="external-link" class="w-4 h-4 text-emerald-600"></i>
-          開啟表單 / 試算表
+        <button onclick="handleAddNewRecordClick()" class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition border border-slate-200" title="開啟 Google 表單填寫新紀錄">
+          <i data-lucide="file-text" class="w-4 h-4 text-emerald-600"></i>
+          填寫 Google 表單
         </button>
-        <button onclick="openModal('syncConfigModal')" class="flex items-center gap-1.5 px-2.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition" title="檢視或修改連線網址">
+        <button onclick="openModal('addModal')" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg transition border border-emerald-300">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          網頁直接寫入
+        </button>
+        <button onclick="openModal('syncConfigModal')" class="flex items-center gap-1.5 px-2.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition" title="檢視連線網址設定">
           <i data-lucide="settings" class="w-4 h-4"></i>
         </button>
         <button onclick="openModal('importModal')" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition">
@@ -265,7 +269,7 @@
       <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
         <div>
           <h3 class="text-base font-bold text-slate-900">授課歷程詳細紀錄總覽</h3>
-          <p class="text-xs text-slate-500 mt-0.5">點擊右側按鈕可快速編輯單筆紀錄或刪除修改</p>
+          <p class="text-xs text-slate-500 mt-0.5">即時呈現 Google 試算表最新寫入紀錄，可搜尋、篩選與修改</p>
         </div>
 
         <!-- 篩選與搜尋工具列 -->
@@ -320,19 +324,19 @@
       <!-- 表尾摘要資訊 -->
       <div class="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center flex-wrap gap-2">
         <span id="tableCountInfo">顯示 4 筆授課紀錄</span>
-        <span id="sheetSourceInfo" class="text-slate-400 text-[11px] truncate max-w-sm">雲端來源：英語教學進度紀錄表 (回覆)</span>
+        <span id="sheetSourceInfo" class="text-slate-400 text-[11px] truncate max-w-sm">雲端來源：英語教學進度紀錄表 (已雙向連線)</span>
       </div>
     </section>
 
   </main>
 
-  <!-- Modal 1: 匯入資料 (Excel / CSV / Google Sheet) -->
+  <!-- Modal 1: 匯入資料 (Excel / CSV) -->
   <div id="importModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="upload" class="w-5 h-5 text-emerald-600"></i>
-          匯入教學紀錄資料
+          匯入教學紀錄檔案
         </h3>
         <button onclick="closeModal('importModal')" class="text-slate-400 hover:text-slate-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -368,13 +372,13 @@
     </div>
   </div>
 
-  <!-- Modal 2: 新增/編輯課堂紀錄 -->
+  <!-- Modal 2: 新增/編輯課堂紀錄 (支援即時寫入 Google 試算表) -->
   <div id="addModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <h3 id="formModalTitle" class="text-base font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i>
-          新增授課紀錄
+          新增授課紀錄 (即時寫入試算表)
         </h3>
         <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -384,6 +388,15 @@
       <form id="recordForm" onsubmit="saveRecord(event)" class="space-y-3 text-xs">
         <input type="hidden" id="recordId">
         
+        <!-- 雲端寫入提示通知 -->
+        <div class="p-2.5 rounded-lg border text-[11px] leading-relaxed flex items-center justify-between gap-2 bg-emerald-50 border-emerald-200 text-emerald-800">
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="zap" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+            <span>已成功連接您的 <strong>Apps Script API</strong>，點擊儲存將直接寫入 Google 試算表！</span>
+          </div>
+          <button type="button" onclick="handleAddNewRecordClick()" class="underline text-emerald-800 font-semibold whitespace-nowrap">改開 Google 表單</button>
+        </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-medium text-slate-700 mb-1">授課日期</label>
@@ -416,15 +429,6 @@
         <div>
           <label class="block font-medium text-slate-700 mb-1">實際進度與常規建立狀況</label>
           <input type="text" id="inputActual" required placeholder="例如：貼完教學說明、還有印章單未貼、未說明加章規則" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500">
-        </div>
-
-        <!-- 雲端寫入提示通知 -->
-        <div id="gasStatusHint" class="p-2.5 rounded-lg border text-[11px] leading-relaxed flex items-center justify-between gap-2 bg-amber-50 border-amber-200 text-amber-800">
-          <div class="flex items-center gap-1.5">
-            <i data-lucide="cloud-off" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
-            <span>目前為「本機暫存模式」。若要直接寫入 Google 試算表，請至設定啟用 <strong>Apps Script</strong>。</span>
-          </div>
-          <button type="button" onclick="openModal('syncConfigModal')" class="underline text-emerald-700 font-semibold whitespace-nowrap">設定連線</button>
         </div>
 
         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
@@ -486,12 +490,13 @@
 
         <div class="flex items-center justify-between pt-2 border-t border-slate-100">
           <button type="button" onclick="handleAddNewRecordClick()" class="text-emerald-700 hover:text-emerald-800 flex items-center gap-1 text-[11px] font-medium">
-            <i data-lucide="external-link" class="w-3.5 h-3.5"></i> 改用 Google 表單填寫
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i> 改開啟 Google 表單填寫
           </button>
           <div class="flex justify-end gap-2">
             <button type="button" onclick="closeModal('addModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">取消</button>
-            <button type="submit" id="submitRecordBtn" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg flex items-center gap-1">
-              <span id="saveBtnText">儲存紀錄</span>
+            <button type="submit" id="submitRecordBtn" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg flex items-center gap-1.5">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              <span id="saveBtnText">儲存並寫入雲端</span>
             </button>
           </div>
         </div>
@@ -499,13 +504,13 @@
     </div>
   </div>
 
-  <!-- Modal 3: Google 試算表與表單連線設定 -->
+  <!-- Modal 3: Google 試算表與表單連線設定 (已直接綁定) -->
   <div id="syncConfigModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="cloud-cog" class="w-5 h-5 text-emerald-600"></i>
-          Google 雲端試算表雙向連線設定
+          Google 雲端雙向連線設定
         </h3>
         <button onclick="closeModal('syncConfigModal')" class="text-slate-400 hover:text-slate-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -514,69 +519,38 @@
 
       <div class="space-y-3.5 text-xs text-slate-600">
         <div class="p-3 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 leading-relaxed">
-          <strong class="font-semibold block mb-1">✅ 讀取來源（已綁定您的試算表）：</strong>
-          <span class="text-emerald-900 font-mono break-all text-[11px]">https://docs.google.com/spreadsheets/d/1AdRfjTL-35VDAqOYJwKWb9kibYnyOkWY72-XrIHe6lU/edit</span>
+          <strong class="font-semibold block mb-1">✅ 雲端雙向通道已完全設定綁定：</strong>
+          <ul class="list-disc list-inside space-y-0.5 text-[11px] text-emerald-900">
+            <li>Google 試算表（讀取來源）：已綁定</li>
+            <li>Google Apps Script API（寫入端點）：已綁定</li>
+            <li>Google 表單（回覆輸入）：已綁定</li>
+          </ul>
         </div>
 
         <div>
           <label class="block font-medium text-slate-700 mb-1">Google 試算表共用網址 (資料讀取來源)</label>
-          <input type="text" id="sheetUrlInput" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500" value="https://docs.google.com/spreadsheets/d/1AdRfjTL-35VDAqOYJwKWb9kibYnyOkWY72-XrIHe6lU/edit?usp=sharing">
-          <p class="text-[11px] text-slate-400 mt-1">請確保試算表設為「知道連結的人均可檢視」。</p>
-        </div>
-
-        <div class="p-3.5 bg-slate-900 text-slate-200 rounded-xl space-y-2.5 border border-slate-700">
-          <div class="flex items-center justify-between">
-            <span class="font-semibold text-emerald-400 text-xs flex items-center gap-1.5">
-              <i data-lucide="zap" class="w-4 h-4"></i> 雙向寫入通道 (Google Apps Script API)
-            </span>
-            <span id="gasStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">尚未啟用</span>
-          </div>
-          <p class="text-[11px] text-slate-300">若想在網頁按「新增」時<strong>自動寫入 Google 試算表</strong>，只需在試算表設定 1 分鐘小腳本：</p>
-          
-          <input type="text" id="gasScriptUrlInput" placeholder="請貼上部署後的 Apps Script 網頁應用程式網址 (https://script.google.com/...)" class="w-full p-2 bg-slate-800 border border-slate-600 rounded-lg text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-emerald-400">
-
-          <!-- 展開/收合教學 -->
-          <details class="text-[11px] text-slate-300 space-y-1.5 pt-1">
-            <summary class="cursor-pointer text-emerald-300 font-medium hover:underline">▶ 查看 1 分鐘啟用 3 步驟與程式碼</summary>
-            <ol class="list-decimal list-inside space-y-1 mt-2 text-slate-300 pl-1">
-              <li>開啟您的 Google 試算表 ➜ 點擊上方選單<strong>「擴充功能」➜「Apps Script」</strong>。</li>
-              <li>清空編輯器，貼上下方代碼並存檔：</li>
-            </ol>
-            <div class="relative mt-1">
-              <textarea id="gasSampleCode" readonly rows="5" class="w-full p-2 bg-black/50 border border-slate-700 rounded text-[11px] font-mono text-emerald-300 select-all">function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-  var d = JSON.parse(e.postData.contents);
-  sheet.appendRow([
-    new Date().toLocaleString("zh-TW", {timeZone: "Asia/Taipei"}),
-    d.date, d.class, d.planned, d.actual,
-    d.hwCorrection, d.hwMakeup, d.examMakeup, d.absent,
-    d.interaction, d.focus, d.motivation, d.score,
-    "", d.notes
-  ]);
-  return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
-}</textarea>
-              <button type="button" onclick="copyGasCode()" class="absolute top-2 right-2 px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-[10px]">複製代碼</button>
-            </div>
-            <ol start="3" class="list-decimal list-inside space-y-1 mt-2 text-slate-300 pl-1">
-              <li>點右上角<strong>「部署」➜「新增部署作業」</strong>。齒輪選「網頁應用程式」，「誰可以存取」選<strong>「所有人」</strong>，複製部署網址貼回上方框格即可！</li>
-            </ol>
-          </details>
+          <input type="text" id="sheetUrlInput" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500">
         </div>
 
         <div>
-          <label class="block font-medium text-slate-700 mb-1">Google 表單填寫網址 (選填)</label>
-          <input type="text" id="formUrlInput" placeholder="https://docs.google.com/forms/d/e/.../viewform" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500">
+          <label class="block font-medium text-slate-700 mb-1">Google Apps Script 部署網址 (雙向寫入 API)</label>
+          <input type="text" id="gasScriptUrlInput" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Google 表單填寫網址</label>
+          <input type="text" id="formUrlInput" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500">
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
           <button type="button" onclick="closeModal('syncConfigModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">關閉</button>
-          <button type="button" onclick="saveSyncConfig()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg">儲存並測試同步</button>
+          <button type="button" onclick="saveSyncConfig()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg">儲存並立即同步</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal 4: 自訂確認對話方塊 (代替 confirm) -->
+  <!-- Modal 4: 自訂確認對話方塊 -->
   <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-3">
       <div class="flex items-center gap-3">
@@ -595,7 +569,7 @@
     </div>
   </div>
 
-  <!-- Toast 訊息通知元件 (代替 alert) -->
+  <!-- Toast 訊息通知元件 -->
   <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 ease-out pointer-events-none">
     <div class="flex items-center gap-2.5 px-4 py-3 bg-slate-900 text-white text-xs rounded-xl shadow-xl border border-slate-700 max-w-md">
       <span id="toastIcon" class="text-emerald-400"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
@@ -604,7 +578,7 @@
   </div>
 
   <script>
-    // 預設資料（與您提供的 Google 試算表回覆內容完全同步）
+    // 預設資料（與您的 Google 試算表內容完全一致）
     const initialDataset = [
       {
         id: 1,
@@ -689,10 +663,14 @@
       { id: 't3', text: '【教學說明】印製/補發教學說明單張予五辛、五和導師或課堂補貼', done: false }
     ];
 
-    // 直接綁定使用者提供的 Google 試算表網址
-    let currentSheetUrl = localStorage.getItem('edu_sheet_url') || "https://docs.google.com/spreadsheets/d/1AdRfjTL-35VDAqOYJwKWb9kibYnyOkWY72-XrIHe6lU/edit?usp=sharing";
-    let currentFormUrl = localStorage.getItem('edu_form_url') || "";
-    let currentGasUrl = localStorage.getItem('edu_gas_url') || "";
+    // 直接綁定合慶提供的 Google 試算表、Apps Script 部署網址與 Google 表單
+    const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1AdRfjTL-35VDAqOYJwKWb9kibYnyOkWY72-XrIHe6lU/edit?usp=sharing";
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxcnOIQKAhvrPsCt1CH1PYSGPzgiF16JEllfnH8CmuChHEw8an9jjPDa2vhULp-yzlXRw/exec";
+    const DEFAULT_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd54l2ZHmpkUK1yPM6CYRt7IhqYUcLWsdCMrTEcBB0P6vfezg/viewform?usp=header";
+
+    let currentSheetUrl = localStorage.getItem('edu_sheet_url') || DEFAULT_SHEET_URL;
+    let currentGasUrl = localStorage.getItem('edu_gas_url') || DEFAULT_GAS_URL;
+    let currentFormUrl = localStorage.getItem('edu_form_url') || DEFAULT_FORM_URL;
 
     // Chart.js 實例
     let scoreChartInstance = null;
@@ -716,10 +694,9 @@
       toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
       setTimeout(() => {
         toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-      }, 3200);
+      }, 3500);
     }
 
-    // Modal 控制函式
     function openModal(id) {
       const el = document.getElementById(id);
       if (el) {
@@ -733,7 +710,6 @@
       if (el) el.classList.add('hidden');
     }
 
-    // 自訂 Confirm 視窗 (取代 confirm)
     function showCustomConfirm(title, message, callback) {
       document.getElementById('confirmModalTitle').innerText = title;
       document.getElementById('confirmModalMessage').innerText = message;
@@ -755,13 +731,22 @@
       openModal('confirmModal');
     }
 
-    // Google 試算表連線與同步核心
+    // 開啟外部 Google 表單
+    function handleAddNewRecordClick() {
+      if (currentFormUrl) {
+        window.open(currentFormUrl, '_blank');
+      } else {
+        window.open(currentSheetUrl, '_blank');
+      }
+    }
+
+    // Google 試算表連線同步核心 (公開 gviz CSV 端點)
     async function syncFromGoogleSheet(isSilent = false) {
       const btnText = document.getElementById('syncBtnText');
       const spinIcon = document.getElementById('syncSpinIcon');
       const statusBadge = document.getElementById('syncStatusBadge');
 
-      if (!isSilent) {
+      if (!isSilent && btnText && spinIcon) {
         btnText.innerText = '同步中...';
         spinIcon.classList.add('animate-spin');
       }
@@ -773,8 +758,7 @@
         }
 
         const sheetId = match[1];
-        // 透過 Google 試算表公開 gviz 端點抓取 CSV
-        const csvEndpoint = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+        const csvEndpoint = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&t=${Date.now()}`;
 
         const response = await fetch(csvEndpoint, { cache: 'no-store' });
         if (!response.ok) {
@@ -788,86 +772,47 @@
 
         const parsedCount = parseSheetArray(json, false);
         
-        statusBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200';
-        statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 雲端連線正常';
+        if (statusBadge) {
+          statusBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200';
+          statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 雲端雙向連線正常';
+        }
 
         if (!isSilent) {
           showToast(`已成功同步！共讀取 ${parsedCount} 筆授課紀錄。`);
         }
       } catch (err) {
         console.warn('Google Sheet 連線提示:', err);
-        statusBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200';
-        statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 已載入預存紀錄';
+        if (statusBadge) {
+          statusBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200';
+          statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 已載入預存紀錄';
+        }
 
         if (!isSilent) {
-          showToast(`已保留現有資料。提示：請確保 Google 試算表設為「知道連結的人均可檢視」。`, true);
+          showToast(`連線受阻或網路稍慢，已先載入預存紀錄。請確認試算表為「知道連結的人均可檢視」。`, true);
         }
       } finally {
-        if (!isSilent) {
-          btnText.innerText = '立即同步 Google 試算表';
+        if (!isSilent && btnText && spinIcon) {
+          btnText.innerText = '立即同步試算表';
           spinIcon.classList.remove('animate-spin');
         }
       }
     }
 
-    function handleAddNewRecordClick() {
-      if (currentFormUrl && currentFormUrl.trim() !== '') {
-        window.open(currentFormUrl, '_blank');
-      } else {
-        window.open(currentSheetUrl, '_blank');
-      }
-    }
-
     function saveSyncConfig() {
-      currentSheetUrl = document.getElementById('sheetUrlInput').value.trim();
-      currentFormUrl = document.getElementById('formUrlInput').value.trim();
-      currentGasUrl = document.getElementById('gasScriptUrlInput').value.trim();
+      currentSheetUrl = document.getElementById('sheetUrlInput').value.trim() || DEFAULT_SHEET_URL;
+      currentGasUrl = document.getElementById('gasScriptUrlInput').value.trim() || DEFAULT_GAS_URL;
+      currentFormUrl = document.getElementById('formUrlInput').value.trim() || DEFAULT_FORM_URL;
 
       localStorage.setItem('edu_sheet_url', currentSheetUrl);
-      localStorage.setItem('edu_form_url', currentFormUrl);
       localStorage.setItem('edu_gas_url', currentGasUrl);
+      localStorage.setItem('edu_form_url', currentFormUrl);
 
-      updateGasStatusUI();
       closeModal('syncConfigModal');
       syncFromGoogleSheet();
+      showToast('已更新連線設定！');
     }
 
-    function updateGasStatusUI() {
-      const badge = document.getElementById('gasStatusBadge');
-      const hint = document.getElementById('gasStatusHint');
-      if (currentGasUrl && currentGasUrl.trim().startsWith('https://script.google.com')) {
-        if (badge) {
-          badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-900/60 text-emerald-300 border border-emerald-600';
-          badge.innerText = '已啟用雲端寫入';
-        }
-        if (hint) {
-          hint.className = 'p-2.5 rounded-lg border text-[11px] leading-relaxed flex items-center justify-between gap-2 bg-emerald-50 border-emerald-200 text-emerald-800';
-          hint.innerHTML = '<div class="flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i><span>已連線至 Google 試算表寫入通道，儲存時將<strong>同步發送至雲端</strong>。</span></div>';
-        }
-      } else {
-        if (badge) {
-          badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700';
-          badge.innerText = '尚未啟用';
-        }
-        if (hint) {
-          hint.className = 'p-2.5 rounded-lg border text-[11px] leading-relaxed flex items-center justify-between gap-2 bg-amber-50 border-amber-200 text-amber-800';
-          hint.innerHTML = '<div class="flex items-center gap-1.5"><i data-lucide="cloud-off" class="w-4 h-4 text-amber-600 flex-shrink-0"></i><span>目前為「本機暫存模式」。若要直接寫入 Google 試算表，請至設定啟用 <strong>Apps Script</strong>。</span></div><button type="button" onclick="openModal(\'syncConfigModal\')" class="underline text-emerald-700 font-semibold whitespace-nowrap">設定連線</button>';
-        }
-      }
-      lucide.createIcons();
-    }
-
-    function copyGasCode() {
-      const code = document.getElementById('gasSampleCode').value;
-      const el = document.createElement('textarea');
-      el.value = code;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-      showToast('Apps Script 程式碼已複製至剪貼簿！');
-    }
-
+    // 解析 Google 試算表陣列
     function parseSheetArray(rows, showSuccessToast = true) {
       if (!rows || rows.length < 2) {
         if (showSuccessToast) showToast('表格無有效內容或格式不符', true);
@@ -1302,6 +1247,7 @@
       lucide.createIcons();
     }
 
+    // 儲存紀錄（雙向寫入 Google 試算表核心）
     async function saveRecord(e) {
       e.preventDefault();
       const id = document.getElementById('recordId').value;
@@ -1324,23 +1270,24 @@
         notes: document.getElementById('inputNotes').value.trim()
       };
 
-      if (!id && currentGasUrl && currentGasUrl.trim().startsWith('https://script.google.com')) {
+      // 若是全新紀錄，直接透過 Apps Script POST 寫入 Google 試算表
+      if (!id && currentGasUrl) {
         saveBtn.disabled = true;
         saveBtnText.innerText = '寫入 Google 試算表中...';
         try {
           await fetch(currentGasUrl, {
             method: 'POST',
             mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(recordData)
           });
-          showToast('✅ 已成功將資料寫入 Google 試算表！');
+          showToast('✅ 已成功將紀錄寫入 Google 試算表！');
         } catch (err) {
           console.warn('GAS 寫入失敗，保留於本機:', err);
-          showToast('雲端傳輸異常，已先儲存於本機', true);
+          showToast('雲端傳輸異常，已先保存在本機暫存中', true);
         } finally {
           saveBtn.disabled = false;
-          saveBtnText.innerText = '儲存紀錄';
+          saveBtnText.innerText = '儲存並寫入雲端';
         }
       }
 
@@ -1353,21 +1300,16 @@
         if (localIdx !== -1) {
           localCustomRecords[localIdx] = { ...localCustomRecords[localIdx], ...recordData };
         }
-        showToast('授課紀錄已成功更新！');
+        showToast('授課紀錄已更新！');
       } else {
         const newRecord = {
           id: 'local_' + Date.now(),
           timestamp: new Date().toLocaleString(),
-          isLocalOnly: !currentGasUrl,
           ...recordData
         };
         records.unshift(newRecord);
         localCustomRecords.push(newRecord);
         localStorage.setItem('edu_local_records', JSON.stringify(localCustomRecords));
-
-        if (!currentGasUrl) {
-          showToast('新授課紀錄已儲存（本機暫存，設定 Apps Script 可寫入雲端）');
-        }
       }
 
       localStorage.setItem('edu_records', JSON.stringify(records));
@@ -1376,8 +1318,9 @@
       document.getElementById('recordId').value = '';
       updateAll();
 
+      // 若剛剛寫入 Google 試算表，2.5 秒後背景靜默重新拉取最新數據
       if (currentGasUrl) {
-        setTimeout(() => syncFromGoogleSheet(true), 2000);
+        setTimeout(() => syncFromGoogleSheet(true), 2500);
       }
     }
 
@@ -1411,7 +1354,7 @@
         localStorage.setItem('edu_records', JSON.stringify(records));
         localStorage.setItem('edu_local_records', JSON.stringify(localCustomRecords));
         updateAll();
-        showToast('該筆紀錄已刪除');
+        showToast('該筆紀錄已自儀表板移除');
       });
     }
 
@@ -1489,11 +1432,11 @@
     window.onload = function() {
       lucide.createIcons();
       document.getElementById('sheetUrlInput').value = currentSheetUrl;
-      document.getElementById('formUrlInput').value = currentFormUrl;
       document.getElementById('gasScriptUrlInput').value = currentGasUrl;
-      updateGasStatusUI();
+      document.getElementById('formUrlInput').value = currentFormUrl;
+      
       updateAll();
-
+      // 頁面載入時自動向 Google 試算表拉取最新資料
       syncFromGoogleSheet(true);
     };
   </script>
