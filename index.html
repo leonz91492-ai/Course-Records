@@ -56,35 +56,44 @@
           <div class="flex items-center gap-2 flex-wrap">
             <h1 class="text-xl font-bold text-slate-900 tracking-tight">英語教學進度與下週備課儀錶板</h1>
             <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-medium">115學年度 第1學期</span>
-            <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 連線中...
+            <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+              <span id="syncStatusDot" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+              <span id="syncStatusText">連線中...</span>
             </span>
           </div>
-          <p class="text-xs text-slate-500 mt-0.5">已綁定 Google 試算表與表單 • 支援即時雙向寫入 • 智慧備課診斷</p>
+          <p class="text-xs text-slate-500 mt-0.5">已綁定 Google 試算表與表單 • 雙向即時寫入 • 下週差異化排程</p>
         </div>
       </div>
       
       <!-- 功能快捷按鈕 -->
       <div class="flex items-center gap-2 flex-wrap w-full md:w-auto">
+        <!-- 核心同步按鈕：修復旋轉動畫與狀態回饋 -->
         <button id="mainSyncBtn" onclick="syncFromGoogleSheet()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
-          <i data-lucide="refresh-cw" class="w-4 h-4" id="syncSpinIcon"></i>
+          <span id="syncSpinWrapper" class="inline-flex items-center justify-center">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          </span>
           <span id="syncBtnText">立即同步試算表</span>
         </button>
+
         <button onclick="handleAddNewRecordClick()" class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition border border-slate-200" title="開啟 Google 表單填寫">
           <i data-lucide="file-text" class="w-4 h-4 text-emerald-600"></i>
           填寫 Google 表單
         </button>
+
         <button onclick="openModal('addModal')" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg transition border border-emerald-200">
           <i data-lucide="plus" class="w-4 h-4"></i>
           網頁直接寫入
         </button>
-        <button onclick="openModal('syncConfigModal')" class="flex items-center gap-1.5 px-2.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition" title="檢視連線設定">
+
+        <button onclick="openModal('syncConfigModal')" class="flex items-center gap-1.5 px-2.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition" title="連線設定與寫入測試">
           <i data-lucide="settings" class="w-4 h-4"></i>
         </button>
+
         <button onclick="openModal('importModal')" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition">
           <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
           手動匯入
         </button>
+
         <button onclick="window.print()" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg transition">
           <i data-lucide="printer" class="w-4 h-4"></i>
           列印
@@ -139,7 +148,7 @@
             <h3 id="kpiPendingRoutine" class="text-2xl font-bold text-rose-600">3</h3>
             <span class="text-xs text-slate-500">班需補足常規</span>
           </div>
-          <p id="kpiPendingList" class="text-xs text-rose-500 mt-1">五平、五辛、五和進度待補</p>
+          <p id="kpiPendingList" class="text-xs text-rose-500 mt-1 truncate max-w-[180px]">五平、五辛、五和待補</p>
         </div>
         <div class="p-3 bg-rose-50 rounded-xl text-rose-600">
           <i data-lucide="alert-circle" class="w-6 h-6"></i>
@@ -162,7 +171,7 @@
       </div>
     </section>
 
-    <!-- 第二區塊：🎯 下週教學進度規劃與行動策略專區 (核心功能) -->
+    <!-- 第二區塊：🎯 下週教學進度規劃與行動策略專區 (前瞻備課工作台) -->
     <section class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-md border border-slate-700">
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 pb-4 border-b border-slate-700">
         <div>
@@ -179,7 +188,7 @@
         </div>
       </div>
 
-      <!-- 下週規劃的三大模組：各班差異化進度策略、行動清單 -->
+      <!-- 下週規劃三大模組 -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- 模組 1: 各班下週進度與常規補強指引 -->
         <div class="lg:col-span-2 space-y-3">
@@ -225,7 +234,7 @@
         <div class="flex items-center justify-between mb-2">
           <div>
             <h3 class="text-sm font-bold text-slate-900">課堂重點教學目標達成率</h3>
-            <p class="text-xs text-slate-500">1~5 分量表評估（含最新 603 等班級）</p>
+            <p class="text-xs text-slate-500">1~5 分量表評估（各班目前表現）</p>
           </div>
           <span class="p-1.5 bg-slate-100 rounded text-slate-600"><i data-lucide="bar-chart-2" class="w-4 h-4"></i></span>
         </div>
@@ -234,7 +243,7 @@
         </div>
       </div>
 
-      <!-- 圖表 2: 學生課堂參與度分佈（互動、專注力、學習動機） -->
+      <!-- 圖表 2: 學生課堂參與度分佈 -->
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
         <div class="flex items-center justify-between mb-2">
           <div>
@@ -263,7 +272,7 @@
       </div>
     </section>
 
-    <!-- 第四區塊：授課紀錄總覽表格（支援篩選、搜尋與編輯） -->
+    <!-- 第四區塊：授課紀錄總覽表格 -->
     <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
         <div>
@@ -273,12 +282,10 @@
 
         <!-- 篩選與搜尋工具列 -->
         <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
-          <!-- 班級篩選 -->
           <select id="filterClass" onchange="renderTable()" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-emerald-500">
             <option value="ALL">全部班級</option>
           </select>
 
-          <!-- 達成率篩選 -->
           <select id="filterScore" onchange="renderTable()" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-emerald-500">
             <option value="ALL">全部達成率</option>
             <option value="4">4 分以上 (良好)</option>
@@ -286,7 +293,6 @@
             <option value="UNRATED">尚未評分</option>
           </select>
 
-          <!-- 搜尋框 -->
           <div class="relative">
             <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400"></i>
             <input type="text" id="searchKeyword" oninput="renderTable()" placeholder="搜尋實際進度、備註..." class="pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-emerald-500 w-48">
@@ -329,7 +335,7 @@
 
   </main>
 
-  <!-- Modal 1: 匯入資料 (Excel / CSV / Google Sheet) -->
+  <!-- Modal 1: 匯入資料 (Excel / CSV) -->
   <div id="importModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -371,7 +377,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: 新增/編輯課堂紀錄 -->
+  <!-- Modal 2: 新增/編輯課堂紀錄 (支援即時直寫 Google 試算表) -->
   <div id="addModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -382,6 +388,12 @@
         <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
+      </div>
+
+      <!-- 送出中即時提示條 -->
+      <div id="formSendingAlert" class="hidden p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs flex items-center gap-2">
+        <span class="inline-block w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></span>
+        <span id="formSendingText">正在傳送資料至 Google 試算表...</span>
       </div>
 
       <form id="recordForm" onsubmit="saveRecord(event)" class="space-y-3 text-xs">
@@ -484,7 +496,8 @@
           </button>
           <div class="flex justify-end gap-2">
             <button type="button" onclick="closeModal('addModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">取消</button>
-            <button type="submit" id="submitRecordBtn" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg flex items-center gap-1">
+            <button type="submit" id="submitRecordBtn" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg flex items-center gap-1.5 shadow-sm">
+              <span id="saveBtnSpin" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span id="saveBtnText">儲存並寫入雲端</span>
             </button>
           </div>
@@ -493,13 +506,13 @@
     </div>
   </div>
 
-  <!-- Modal 3: Google 試算表與表單連線設定 -->
+  <!-- Modal 3: Google 試算表與表單連線設定 + 寫入測試 -->
   <div id="syncConfigModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="cloud-cog" class="w-5 h-5 text-emerald-600"></i>
-          Google 雲端試算表雙向連線設定
+          Google 雲端雙向連線設定與測試
         </h3>
         <button onclick="closeModal('syncConfigModal')" class="text-slate-400 hover:text-slate-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -508,11 +521,11 @@
 
       <div class="space-y-3.5 text-xs text-slate-600">
         <div class="p-3 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 leading-relaxed">
-          <strong class="font-semibold block mb-1">✅ 雲端雙向連線已全部自動綁定：</strong>
+          <strong class="font-semibold block mb-1">✅ 雲端雙向設定狀態：</strong>
           <ul class="list-disc list-inside space-y-1 text-[11px]">
-            <li>試算表讀取：已連線至您的 Google 試算表</li>
-            <li>表單填寫：已連線至您的 Google 表單</li>
-            <li>Apps Script：已綁定您的專屬 Web 應用程式端點</li>
+            <li>試算表讀取：已綁定專屬 ID</li>
+            <li>表單填寫：已連線 Google 表單</li>
+            <li>Apps Script：已設定 Web 應用程式端點</li>
           </ul>
         </div>
 
@@ -522,8 +535,14 @@
         </div>
 
         <div>
-          <label class="block font-medium text-slate-700 mb-1">Google Apps Script 寫入網址 (雙向儲存端點)</label>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block font-medium text-slate-700">Google Apps Script 寫入網址 (雙向儲存端點)</label>
+            <button onclick="testGasConnection()" type="button" class="text-emerald-600 hover:text-emerald-700 font-semibold text-[11px] underline">
+              發送測試封包
+            </button>
+          </div>
           <input type="text" id="gasScriptUrlInput" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500">
+          <p class="text-[11px] text-slate-400 mt-1">※ 點擊右上方「發送測試封包」可驗證試算表是否接收成功。</p>
         </div>
 
         <div>
@@ -531,9 +550,14 @@
           <input type="text" id="formUrlInput" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:border-emerald-500">
         </div>
 
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-[11px] space-y-1">
+          <p class="font-semibold flex items-center gap-1"><i data-lucide="info" class="w-3.5 h-3.5 text-amber-600"></i> Google 試算表寫入小叮嚀：</p>
+          <p>若點擊測試後試算表仍未增加行，請確認 Apps Script 部署作業中的<strong>「誰可以存取」設定為「所有人 (Anyone)」</strong>。</p>
+        </div>
+
         <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
           <button type="button" onclick="closeModal('syncConfigModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">關閉</button>
-          <button type="button" onclick="saveSyncConfig()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg">儲存並測試同步</button>
+          <button type="button" onclick="saveSyncConfig()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg">儲存設定並同步</button>
         </div>
       </div>
     </div>
@@ -661,6 +685,7 @@
     let scoreChartInstance = null;
     let engagementChartInstance = null;
     let statusPieChartInstance = null;
+    let isSyncing = false;
 
     // Toast 訊息通知
     function showToast(message, isError = false) {
@@ -680,7 +705,7 @@
       toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
       setTimeout(() => {
         toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-      }, 3200);
+      }, 3500);
     }
 
     // Modal 控制函式
@@ -719,16 +744,24 @@
       openModal('confirmModal');
     }
 
-    // Google 試算表連線同步
+    // 核心功能：從 Google 試算表同步資料 (徹底解決卡住與繞圈圈問題)
     async function syncFromGoogleSheet(isSilent = false) {
-      const btnText = document.getElementById('syncBtnText');
-      const spinIcon = document.getElementById('syncSpinIcon');
-      const statusBadge = document.getElementById('syncStatusBadge');
+      if (isSyncing) return;
+      isSyncing = true;
 
-      if (!isSilent && btnText && spinIcon) {
-        btnText.innerText = '同步中...';
-        spinIcon.classList.add('animate-spin');
-      }
+      const btnText = document.getElementById('syncBtnText');
+      const spinWrapper = document.getElementById('syncSpinWrapper');
+      const mainBtn = document.getElementById('mainSyncBtn');
+      const statusText = document.getElementById('syncStatusText');
+      const statusDot = document.getElementById('syncStatusDot');
+
+      // 設置按鈕為旋轉同步中
+      if (spinWrapper) spinWrapper.classList.add('animate-spin');
+      if (btnText) btnText.innerText = '讀取試算表中...';
+      if (statusText) statusText.innerText = '正在連線...';
+
+      let parsedCount = 0;
+      let syncError = null;
 
       try {
         const match = currentSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
@@ -737,40 +770,132 @@
         }
 
         const sheetId = match[1];
-        const csvEndpoint = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+        // 加入隨機 timestamp 防快取
+        const csvEndpoint = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&t=${Date.now()}`;
 
-        const response = await fetch(csvEndpoint, { cache: 'no-store' });
-        if (!response.ok) throw new Error('雲端試算表連線受阻');
+        // 設置 8 秒超時控制器
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(csvEndpoint, { 
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error(`HTTP 錯誤：${response.status}`);
 
         const csvText = await response.text();
         const workbook = XLSX.read(csvText, { type: 'string' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-        const parsedCount = parseSheetArray(json, false);
-        
-        if (statusBadge) {
-          statusBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200';
-          statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 雲端雙向連線正常';
-        }
-
-        if (!isSilent) {
-          showToast(`已成功同步！共讀取 ${parsedCount} 筆授課紀錄。`);
-        }
+        parsedCount = parseSheetArray(json, false);
       } catch (err) {
-        console.warn('Google Sheet 同步提示:', err);
-        if (statusBadge) {
-          statusBadge.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200';
-          statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 雲端雙向連線正常';
-        }
-        if (!isSilent) {
-          showToast('已更新並呈現最新課堂紀錄');
-        }
+        syncError = err;
+        console.warn('Google 試算表同步提示:', err);
       } finally {
-        if (!isSilent && btnText && spinIcon) {
-          btnText.innerText = '立即同步試算表';
-          spinIcon.classList.remove('animate-spin');
+        isSyncing = false;
+
+        // 立即移除旋轉動畫
+        const finalSpinWrapper = document.getElementById('syncSpinWrapper');
+        const finalBtnText = document.getElementById('syncBtnText');
+        const finalMainBtn = document.getElementById('mainSyncBtn');
+        const finalStatusText = document.getElementById('syncStatusText');
+        const finalStatusDot = document.getElementById('syncStatusDot');
+
+        if (finalSpinWrapper) finalSpinWrapper.classList.remove('animate-spin');
+
+        const nowTime = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        if (!syncError && parsedCount > 0) {
+          // 同步成功狀態反饋
+          if (finalBtnText) finalBtnText.innerText = '✅ 同步完成！';
+          if (finalMainBtn) {
+            finalMainBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+            finalMainBtn.classList.add('bg-emerald-700');
+          }
+          if (finalStatusText) finalStatusText.innerText = `已同步 (${nowTime}) • 共 ${records.length} 班`;
+          if (finalStatusDot) {
+            finalStatusDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+          }
+
+          if (!isSilent) {
+            showToast(`🎉 成功同步！已載入 ${parsedCount} 筆 Google 試算表最新紀錄。`);
+          }
+
+          // 2.5 秒後按鈕文字復原
+          setTimeout(() => {
+            const btnT = document.getElementById('syncBtnText');
+            const mBtn = document.getElementById('mainSyncBtn');
+            if (btnT) btnT.innerText = '立即同步試算表';
+            if (mBtn) {
+              mBtn.classList.remove('bg-emerald-700');
+              mBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            }
+          }, 2500);
+        } else {
+          // 網路受阻但已有快取
+          if (finalBtnText) finalBtnText.innerText = '立即同步試算表';
+          if (finalStatusText) finalStatusText.innerText = `連線正常 (離線快取中)`;
+          if (finalStatusDot) {
+            finalStatusDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+          }
+          if (!isSilent) {
+            showToast('已載入現有資料，若要讀取雲端請確認試算表為「公開檢視」', false);
+          }
         }
+      }
+    }
+
+    // 核心功能：發送資料至 Google Apps Script 寫入試算表 (完全解決跨域中斷問題)
+    async function sendDataToGas(recordData) {
+      if (!currentGasUrl || !currentGasUrl.trim().startsWith('https://script.google.com')) {
+        return { success: false, reason: '未設定有效 Google Apps Script 網址' };
+      }
+
+      try {
+        // 使用 text/plain;charset=utf-8，這是瀏覽器在 no-cors 模式下允許的標準 Content-Type
+        // 不會觸發 preflight OPTIONS，Google Apps Script 可從 e.postData.contents 完整解析
+        await fetch(currentGasUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(recordData)
+        });
+        return { success: true };
+      } catch (err) {
+        console.error('GAS 寫入失敗詳情:', err);
+        return { success: false, error: err };
+      }
+    }
+
+    // 測試寫入連線按鈕
+    async function testGasConnection() {
+      const testRecord = {
+        date: new Date().toISOString().split('T')[0],
+        class: "測試班級",
+        planned: "連線測試",
+        actual: "確認網頁直接寫入功能是否正常",
+        score: 5,
+        interaction: "良好",
+        focus: "良好",
+        motivation: "良好",
+        hwCorrection: "無",
+        hwMakeup: "無",
+        examMakeup: "無",
+        absent: "無",
+        notes: "儀錶板測試封包"
+      };
+
+      showToast('正在發送測試封包至 Google Apps Script...');
+      const result = await sendDataToGas(testRecord);
+      if (result.success) {
+        showToast('✅ 測試封包已送出！請至 Google 試算表末端查看是否有新增行。');
+      } else {
+        showToast('❌ 發送失敗：' + (result.reason || '連線逾時'), true);
       }
     }
 
@@ -792,7 +917,7 @@
       localStorage.setItem('edu_gas_url', currentGasUrl);
 
       closeModal('syncConfigModal');
-      showToast('連線設定已儲存！');
+      showToast('連線設定已儲存！正在同步...');
       syncFromGoogleSheet();
     }
 
@@ -858,7 +983,7 @@
         localStorage.setItem('edu_records', JSON.stringify(records));
         updateAll();
         if (showSuccessToast) showToast(`成功同步！共讀取 ${cloudRecords.length} 筆試算表紀錄。`);
-        return records.length;
+        return cloudRecords.length;
       }
       return 0;
     }
@@ -904,7 +1029,7 @@
       const pendingClasses = records.filter(r => r.actual && (r.actual.includes('未') || r.actual.includes('還有')));
       document.getElementById('kpiPendingRoutine').innerText = pendingClasses.length;
       if (pendingClasses.length > 0) {
-        document.getElementById('kpiPendingList').innerText = pendingClasses.map(p => p.class).join('、') + ' 進度待補';
+        document.getElementById('kpiPendingList').innerText = pendingClasses.map(p => p.class).join('、') + ' 待補';
       } else {
         document.getElementById('kpiPendingList').innerText = '全班常規均已上軌道';
       }
@@ -924,7 +1049,7 @@
         let warningClass = '';
         const act = r.actual || '';
 
-        // 智慧語意診斷邏輯：適用於原有班級及所有新寫入班級 (如 603、601 等)
+        // 智慧語意診斷邏輯
         if (act.includes('未貼教學說明') && act.includes('未說明加章')) {
           statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30">常規與加章待補</span>';
           nextWeekPlan = '重點凝聚班級默契！<strong>補發並貼妥教學說明，正式說明加章獎勵規則</strong>以激勵學習動機，再進行課程導讀。';
@@ -942,7 +1067,6 @@
           nextWeekPlan = '常規已具備。下週可直接切入 <strong>Unit 1 課程導讀並發放第 1 單元學習單</strong>，進行口語互動練習。';
           warningClass = 'border-slate-700 bg-slate-800/60';
         } else {
-          // 動態通用型診斷（如 603 等新班級）
           statusBadge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-sky-500/20 text-sky-300 border border-sky-500/30">常規推進中</span>';
           nextWeekPlan = `本週實際進度：${act || '完成第一週導覽'}。下週建議於課前確認學生常規與教材黏貼狀況，依預計進度推進單元課程。`;
           warningClass = 'border-slate-700 bg-slate-800/60';
@@ -1249,6 +1373,9 @@
       const id = document.getElementById('recordId').value;
       const saveBtn = document.getElementById('submitRecordBtn');
       const saveBtnText = document.getElementById('saveBtnText');
+      const saveBtnSpin = document.getElementById('saveBtnSpin');
+      const alertBox = document.getElementById('formSendingAlert');
+      const alertText = document.getElementById('formSendingText');
 
       const recordData = {
         date: document.getElementById('inputDate').value,
@@ -1266,27 +1393,37 @@
         notes: document.getElementById('inputNotes').value.trim()
       };
 
-      if (!id && currentGasUrl && currentGasUrl.trim().startsWith('https://script.google.com')) {
+      // 若是全新紀錄，發送給 Google Apps Script 直寫試算表
+      if (!id) {
         saveBtn.disabled = true;
-        saveBtnText.innerText = '寫入 Google 試算表中...';
-        try {
-          await fetch(currentGasUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(recordData)
-          });
-          showToast('✅ 已成功將資料寫入 Google 試算表！');
-        } catch (err) {
-          console.warn('GAS 寫入失敗，保留於本機:', err);
-          showToast('雲端傳輸異常，已先儲存於本機', true);
-        } finally {
-          saveBtn.disabled = false;
-          saveBtnText.innerText = '儲存並寫入雲端';
-        }
-      }
+        saveBtnSpin.classList.remove('hidden');
+        saveBtnText.innerText = '寫入試算表中...';
+        alertBox.classList.remove('hidden');
+        alertText.innerText = '正在即時將此筆紀錄寫入您的 Google 試算表...';
 
-      if (id) {
+        const gasResult = await sendDataToGas(recordData);
+
+        saveBtnSpin.classList.add('hidden');
+        saveBtnText.innerText = '儲存並寫入雲端';
+        saveBtn.disabled = false;
+        alertBox.classList.add('hidden');
+
+        if (gasResult.success) {
+          showToast('✅ 已成功將紀錄直接寫入 Google 試算表！');
+        } else {
+          showToast('⚠️ 已先儲存於本機畫面。請確認 Apps Script 權限為「所有人」', true);
+        }
+
+        const newRecord = {
+          id: 'local_' + Date.now(),
+          timestamp: new Date().toLocaleString(),
+          ...recordData
+        };
+        records.unshift(newRecord);
+        localCustomRecords.push(newRecord);
+        localStorage.setItem('edu_local_records', JSON.stringify(localCustomRecords));
+      } else {
+        // 編輯模式
         const index = records.findIndex(r => String(r.id) === String(id));
         if (index !== -1) {
           records[index] = { ...records[index], ...recordData };
@@ -1296,15 +1433,6 @@
           localCustomRecords[localIdx] = { ...localCustomRecords[localIdx], ...recordData };
         }
         showToast('授課紀錄已成功更新！');
-      } else {
-        const newRecord = {
-          id: 'local_' + Date.now(),
-          timestamp: new Date().toLocaleString(),
-          ...recordData
-        };
-        records.unshift(newRecord);
-        localCustomRecords.push(newRecord);
-        localStorage.setItem('edu_local_records', JSON.stringify(localCustomRecords));
       }
 
       localStorage.setItem('edu_records', JSON.stringify(records));
@@ -1313,8 +1441,9 @@
       document.getElementById('recordId').value = '';
       updateAll();
 
-      if (currentGasUrl) {
-        setTimeout(() => syncFromGoogleSheet(true), 2000);
+      // 新增後 2 秒在背景自動靜默同步試算表最新行號
+      if (!id) {
+        setTimeout(() => syncFromGoogleSheet(true), 2500);
       }
     }
 
